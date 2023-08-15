@@ -10,6 +10,10 @@ pub enum Color {
     Red,
     Green,
     Blue,
+    Yellow,
+    Magenta,
+    Cyan,
+    CC256(u8),
     RGB(u8, u8, u8),
     Default,
 }
