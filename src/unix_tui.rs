@@ -24,16 +24,29 @@ impl InputInterface {
         return InputInterface { input_fd: input_fd };
     }
     pub fn get_input_mode(&self) -> Option<termios> {
-        let mut termios_struct: termios = termios {
-            c_iflag: 0,
-            c_oflag: 0,
-            c_cflag: 0,
-            c_lflag: 0,
-            c_line: 0,
-            c_cc: [0; 32],
-            c_ispeed: 0,
-            c_ospeed: 0,
-        };
+        let mut termios_struct: termios;
+        if cfg!(target_os = "macos") {
+            termios_struct = termios {
+                c_iflag: 0,
+                c_oflag: 0,
+                c_cflag: 0,
+                c_lflag: 0,
+                c_cc: [0; 20],
+                c_ispeed: 0,
+                c_ospeed: 0,
+            }
+        } else if cfg!(target_os = "linux") {
+            termios_struct = termios {
+                c_iflag: 0,
+                c_oflag: 0,
+                c_cflag: 0,
+                c_lflag: 0,
+                c_line: 0,
+                c_cc: [0; 32],
+                c_ispeed: 0,
+                c_ospeed: 0,
+            };
+        }
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
                 return None;
