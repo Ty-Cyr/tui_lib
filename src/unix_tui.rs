@@ -168,8 +168,7 @@ pub fn new_termios() -> termios {
         c_oflag: 0,
         c_cflag: 0,
         c_lflag: 0,
-        c_line: 0,
-        c_cc: [0; 32],
+        c_cc: [0; 20],
         c_ispeed: 0,
         c_ospeed: 0,
     };
