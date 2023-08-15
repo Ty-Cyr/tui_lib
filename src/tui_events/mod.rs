@@ -1,7 +1,7 @@
 use crate::tui_keys::TuiKeys;
 
 pub enum TuiEvent {
-    KeyEvent(bool, TuiKeys, u16),
+    KeyEvent(TuiKeys),
     BufferSizeEvent,
     Other,
     Error,

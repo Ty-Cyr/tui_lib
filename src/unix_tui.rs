@@ -96,7 +96,7 @@ impl InputInterface {
     fn handle_escape_input_s1(&self) -> TuiEvent {
         let input_char_option: Option<char> = self.try_read_char();
         match input_char_option {
-            None => return TuiEvent::KeyEvent(true, TuiKeys::Escape, 1),
+            None => return TuiEvent::KeyEvent(TuiKeys::Escape),
             Some(input_char) => match input_char {
                 '[' => return self.handle_escape_input_s2(),
                 _ => return TuiEvent::Error,
@@ -107,14 +107,14 @@ impl InputInterface {
     fn handle_escape_input_s2(&self) -> TuiEvent {
         let input_char: char = self.read_char();
         match input_char {
-            'A' => return TuiEvent::KeyEvent(true, TuiKeys::UpArrow, 1),
-            'B' => return TuiEvent::KeyEvent(true, TuiKeys::DownArrow, 1),
-            'C' => return TuiEvent::KeyEvent(true, TuiKeys::RightArrow, 1),
-            'D' => return TuiEvent::KeyEvent(true, TuiKeys::LeftArrow, 1),
+            'A' => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
+            'B' => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
+            'C' => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
+            'D' => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
             '3' => {
                 if let Some(input_char) = self.try_read_char() {
                     if input_char == '~' {
-                        return TuiEvent::KeyEvent(true, TuiKeys::Delete, 1);
+                        return TuiEvent::KeyEvent(TuiKeys::Delete);
                     }
                 }
                 return TuiEvent::Error;
@@ -130,19 +130,19 @@ impl InputInterface {
                 return self.handle_escape_input_s1();
             }
             '\x7F' => {
-                return TuiEvent::KeyEvent(true, TuiKeys::Backspace, 1);
+                return TuiEvent::KeyEvent(TuiKeys::Backspace);
             }
             '\n' | '\r' => {
-                return TuiEvent::KeyEvent(true, TuiKeys::Enter, 1);
+                return TuiEvent::KeyEvent(TuiKeys::Enter);
             }
             ' ' => {
-                return TuiEvent::KeyEvent(true, TuiKeys::Space, 1);
+                return TuiEvent::KeyEvent(TuiKeys::Space);
             }
             '\t' => {
-                return TuiEvent::KeyEvent(true, TuiKeys::Tab, 1);
+                return TuiEvent::KeyEvent(TuiKeys::Tab);
             }
             _ => {
-                return TuiEvent::KeyEvent(true, TuiKeys::Other(input_char), 1);
+                return TuiEvent::KeyEvent(TuiKeys::Other(input_char));
             }
         }
     }
