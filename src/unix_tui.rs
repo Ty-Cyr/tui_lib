@@ -5,6 +5,7 @@ use libc::{
     c_char, c_void, cfmakeraw, fcntl, read as cread, tcgetattr, tcsetattr, termios, F_GETFL,
     F_SETFL, ONLCR, OPOST, O_NONBLOCK, TCSADRAIN,
 };
+
 use std::io::stdin;
 use std::os::unix::prelude::AsRawFd;
 
@@ -24,29 +25,7 @@ impl InputInterface {
         return InputInterface { input_fd: input_fd };
     }
     pub fn get_input_mode(&self) -> Option<termios> {
-        let mut termios_struct: termios;
-        if cfg!(target_os = "macos") {
-            termios_struct = termios {
-                c_iflag: 0,
-                c_oflag: 0,
-                c_cflag: 0,
-                c_lflag: 0,
-                c_cc: [0; 20],
-                c_ispeed: 0,
-                c_ospeed: 0,
-            }
-        } else if cfg!(target_os = "linux") {
-            termios_struct = termios {
-                c_iflag: 0,
-                c_oflag: 0,
-                c_cflag: 0,
-                c_lflag: 0,
-                c_line: 0,
-                c_cc: [0; 32],
-                c_ispeed: 0,
-                c_ospeed: 0,
-            };
-        }
+        let mut termios_struct: termios = new_termios();
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
                 return None;
@@ -61,16 +40,7 @@ impl InputInterface {
     }
 
     pub fn get_raw_termios_struct(&self) -> termios {
-        let mut termios_struct: termios = termios {
-            c_iflag: 0,
-            c_oflag: 0,
-            c_cflag: 0,
-            c_lflag: 0,
-            c_line: 0,
-            c_cc: [0; 32],
-            c_ispeed: 0,
-            c_ospeed: 0,
-        };
+        let mut termios_struct: termios = new_termios();
         unsafe {
             cfmakeraw(&mut termios_struct);
             termios_struct.c_oflag |= ONLCR | OPOST;
@@ -175,4 +145,33 @@ pub fn setup_terminal(tui_mode: &TuiMode) -> Option<(InputInterface, TerminalSta
 #[allow(unused)]
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
     input_interface.set_input_mode(terminal_state.termios_struct);
+}
+
+#[cfg(target_os = "linux")]
+pub fn new_termios() -> termios {
+    let termios_struct: termios = termios {
+        c_iflag: 0,
+        c_oflag: 0,
+        c_cflag: 0,
+        c_lflag: 0,
+        c_line: 0,
+        c_cc: [0; 32],
+        c_ispeed: 0,
+        c_ospeed: 0,
+    };
+    return termios_struct;
+}
+#[cfg(target_os = "macos")]
+pub fn new_termios() -> termios {
+    let termios_struct: termios = termios {
+        c_iflag: 0,
+        c_oflag: 0,
+        c_cflag: 0,
+        c_lflag: 0,
+        c_line: 0,
+        c_cc: [0; 32],
+        c_ispeed: 0,
+        c_ospeed: 0,
+    };
+    return termios_struct;
 }
