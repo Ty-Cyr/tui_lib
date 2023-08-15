@@ -64,7 +64,11 @@ impl InputInterface {
                 KEY_EVENT => {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
-                    return parse_key_event_data(key_event_data);
+                    if key_event_data.bKeyDown.as_bool() {
+                        return parse_key_event_data(key_event_data);
+                    } else {
+                        continue;
+                    }
                 }
                 WINDOW_BUFFER_SIZE_EVENT => return TuiEvent::BufferSizeEvent,
                 _ => return TuiEvent::Other,
@@ -93,63 +97,37 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
 
 fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvent {
     match VIRTUAL_KEY(data.wVirtualKeyCode) {
-        VK_RETURN => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Enter, data.wRepeatCount)
-        }
-        VK_LEFT => {
-            return TuiEvent::KeyEvent(
-                data.bKeyDown.as_bool(),
-                TuiKeys::LeftArrow,
-                data.wRepeatCount,
-            )
-        }
+        VK_RETURN => return TuiEvent::KeyEvent(TuiKeys::Enter),
+        VK_LEFT => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
 
-        VK_UP => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::UpArrow, data.wRepeatCount)
-        }
+        VK_UP => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
 
-        VK_RIGHT => {
-            return TuiEvent::KeyEvent(
-                data.bKeyDown.as_bool(),
-                TuiKeys::RightArrow,
-                data.wRepeatCount,
-            )
-        }
+        VK_RIGHT => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
 
-        VK_DOWN => {
-            return TuiEvent::KeyEvent(
-                data.bKeyDown.as_bool(),
-                TuiKeys::DownArrow,
-                data.wRepeatCount,
-            )
-        }
+        VK_DOWN => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
 
         VK_BACK => {
-            return TuiEvent::KeyEvent(
-                data.bKeyDown.as_bool(),
-                TuiKeys::Backspace,
-                data.wRepeatCount,
-            );
+            return TuiEvent::KeyEvent(TuiKeys::Backspace);
         }
 
         VK_DELETE => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Delete, data.wRepeatCount);
+            return TuiEvent::KeyEvent(TuiKeys::Delete);
         }
 
         VK_SPACE => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Space, data.wRepeatCount);
+            return TuiEvent::KeyEvent(TuiKeys::Space);
         }
 
         VK_TAB => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Tab, data.wRepeatCount);
+            return TuiEvent::KeyEvent(TuiKeys::Tab);
         }
 
         VK_ESCAPE => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Escape, data.wRepeatCount);
+            return TuiEvent::KeyEvent(TuiKeys::Escape);
         }
 
         VK_SHIFT => {
-            return TuiEvent::KeyEvent(data.bKeyDown.as_bool(), TuiKeys::Shift, data.wRepeatCount);
+            return TuiEvent::KeyEvent(TuiKeys::Shift);
         }
 
         _ => {
@@ -158,11 +136,7 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvent {
                 char_option = char::from_u32(data.uChar.UnicodeChar as u32);
             }
             if let Some(character) = char_option {
-                return TuiEvent::KeyEvent(
-                    data.bKeyDown.as_bool(),
-                    TuiKeys::Other(character),
-                    data.wRepeatCount,
-                );
+                return TuiEvent::KeyEvent(TuiKeys::Other(character));
             } else {
                 return TuiEvent::Error;
             }
