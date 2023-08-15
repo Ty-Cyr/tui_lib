@@ -15,7 +15,7 @@ fn main() -> Result<(), String> {
             return Err("Failed To Setup Terminal".to_string());
         }
     }
-    tui_terminal.clear_screen();
+    // tui_terminal.clear_screen();
     loop {
         let event: TuiEvent = tui_terminal.get_event();
         match event {
@@ -59,6 +59,7 @@ fn main() -> Result<(), String> {
                                     .set_bold(ThreeBool::True)
                                     .set_underlined(ThreeBool::True),
                             );
+                            tui_terminal.println("Exiting");
                             return Ok(());
                         }
 

@@ -187,6 +187,12 @@ impl TuiTerminal {
         _ = output_lock.flush();
     }
 
+    pub fn clear_line(&mut self) {
+        let mut output_lock: StdoutLock = self.output_interface.lock();
+        _ = output_lock.write("\x1b[0K".as_bytes());
+        _ = output_lock.flush();
+    }
+
     pub fn get_event(&self) -> TuiEvent {
         return self.input_interface.get_event();
     }
