@@ -15,8 +15,7 @@ fn main() -> Result<(), String> {
             return Err("Failed To Setup Terminal".to_string());
         }
     }
-    tui_terminal.set_background_color(Color::Magenta);
-    // tui_terminal.clear_screen();
+    tui_terminal.clear_screen();
     loop {
         let event: TuiEvent = tui_terminal.get_event();
         match event {

@@ -41,12 +41,12 @@ impl TuiTerminal {
             Color::Red => _ = output_lock.write("\x1b[31m".as_bytes()),
             Color::Green => _ = output_lock.write("\x1b[32m".as_bytes()),
             Color::Blue => _ = output_lock.write("\x1b[34m".as_bytes()),
-            Color::Yellow => _ = output_lock.write("\x1b[33".as_bytes()),
-            Color::Magenta => _ = output_lock.write("\x1b[35".as_bytes()),
-            Color::Cyan => _ = output_lock.write("\x1b[36".as_bytes()),
+            Color::Yellow => _ = output_lock.write("\x1b[33m".as_bytes()),
+            Color::Magenta => _ = output_lock.write("\x1b[35m".as_bytes()),
+            Color::Cyan => _ = output_lock.write("\x1b[36m".as_bytes()),
             Color::CC256(code) => {
                 _ = output_lock
-                    .write(("\x1b[38;5".to_owned() + &code.to_string() + "m").as_bytes());
+                    .write(("\x1b[38;5;".to_owned() + &code.to_string() + "m").as_bytes());
             }
             Color::RGB(r, g, b) => {
                 let code: String = String::from("\x1b[38;2;")
@@ -69,12 +69,12 @@ impl TuiTerminal {
             Color::Red => _ = output_lock.write("\x1b[41m".as_bytes()),
             Color::Green => _ = output_lock.write("\x1b[42m".as_bytes()),
             Color::Blue => _ = output_lock.write("\x1b[44m".as_bytes()),
-            Color::Yellow => _ = output_lock.write("\x1b[43".as_bytes()),
-            Color::Magenta => _ = output_lock.write("\x1b[45".as_bytes()),
-            Color::Cyan => _ = output_lock.write("\x1b[46".as_bytes()),
+            Color::Yellow => _ = output_lock.write("\x1b[43m".as_bytes()),
+            Color::Magenta => _ = output_lock.write("\x1b[45m".as_bytes()),
+            Color::Cyan => _ = output_lock.write("\x1b[46m".as_bytes()),
             Color::CC256(code) => {
                 _ = output_lock
-                    .write(("\x1b[48;5".to_owned() + &code.to_string() + "m").as_bytes());
+                    .write(("\x1b[48;5;".to_owned() + &code.to_string() + "m").as_bytes());
             }
             Color::RGB(r, g, b) => {
                 let code: String = String::from("\x1b[48;2;")
