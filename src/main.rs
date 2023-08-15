@@ -38,11 +38,6 @@ fn main() -> Result<(), String> {
                     .println(StringPlus::new("SPACE").set_font_color(Color::RGB(255, 0, 255))),
                 TuiKeys::Tab => tui_terminal
                     .println(StringPlus::new("TAB").set_font_color(Color::RGB(255, 0, 255))),
-
-                TuiKeys::Shift => {
-                    tui_terminal.println(StringPlus::new("SHIFT").set_inverted(ThreeBool::True))
-                }
-
                 TuiKeys::Escape => {
                     tui_terminal.println(
                         StringPlus::new("ESCAPE")

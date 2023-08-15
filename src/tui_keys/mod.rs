@@ -10,6 +10,5 @@ pub enum TuiKeys {
     Delete,
     Tab,
     Space,
-    Shift,
     Other(char),
 }

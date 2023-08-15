@@ -65,7 +65,11 @@ impl InputInterface {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
                     if key_event_data.bKeyDown.as_bool() {
-                        return parse_key_event_data(key_event_data);
+                        let event: TuiEvent = parse_key_event_data(key_event_data);
+                        match event {
+                            TuiEvent::Ignore => continue,
+                            _ => return event,
+                        }
                     } else {
                         continue;
                     }
@@ -96,49 +100,51 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
 }
 
 fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvent {
-    match VIRTUAL_KEY(data.wVirtualKeyCode) {
-        VK_RETURN => return TuiEvent::KeyEvent(TuiKeys::Enter),
-        VK_LEFT => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
+    loop {
+        match VIRTUAL_KEY(data.wVirtualKeyCode) {
+            VK_RETURN => return TuiEvent::KeyEvent(TuiKeys::Enter),
+            VK_LEFT => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
 
-        VK_UP => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
+            VK_UP => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
 
-        VK_RIGHT => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
+            VK_RIGHT => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
 
-        VK_DOWN => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
+            VK_DOWN => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
 
-        VK_BACK => {
-            return TuiEvent::KeyEvent(TuiKeys::Backspace);
-        }
-
-        VK_DELETE => {
-            return TuiEvent::KeyEvent(TuiKeys::Delete);
-        }
-
-        VK_SPACE => {
-            return TuiEvent::KeyEvent(TuiKeys::Space);
-        }
-
-        VK_TAB => {
-            return TuiEvent::KeyEvent(TuiKeys::Tab);
-        }
-
-        VK_ESCAPE => {
-            return TuiEvent::KeyEvent(TuiKeys::Escape);
-        }
-
-        VK_SHIFT => {
-            return TuiEvent::KeyEvent(TuiKeys::Shift);
-        }
-
-        _ => {
-            let char_option: Option<char>;
-            unsafe {
-                char_option = char::from_u32(data.uChar.UnicodeChar as u32);
+            VK_BACK => {
+                return TuiEvent::KeyEvent(TuiKeys::Backspace);
             }
-            if let Some(character) = char_option {
-                return TuiEvent::KeyEvent(TuiKeys::Other(character));
-            } else {
-                return TuiEvent::Error;
+
+            VK_DELETE => {
+                return TuiEvent::KeyEvent(TuiKeys::Delete);
+            }
+
+            VK_SPACE => {
+                return TuiEvent::KeyEvent(TuiKeys::Space);
+            }
+
+            VK_TAB => {
+                return TuiEvent::KeyEvent(TuiKeys::Tab);
+            }
+
+            VK_ESCAPE => {
+                return TuiEvent::KeyEvent(TuiKeys::Escape);
+            }
+
+            VK_SHIFT => {
+                return TuiEvent::Ignore;
+            }
+
+            _ => {
+                let char_option: Option<char>;
+                unsafe {
+                    char_option = char::from_u32(data.uChar.UnicodeChar as u32);
+                }
+                if let Some(character) = char_option {
+                    return TuiEvent::KeyEvent(TuiKeys::Other(character));
+                } else {
+                    return TuiEvent::Error;
+                }
             }
         }
     }
