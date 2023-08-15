@@ -147,7 +147,7 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
     input_interface.set_input_mode(terminal_state.termios_struct);
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(not(target_os = "macos"))]
 pub fn new_termios() -> termios {
     let termios_struct: termios = termios {
         c_iflag: 0,
