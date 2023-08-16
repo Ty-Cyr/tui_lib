@@ -48,7 +48,10 @@ fn main() -> Result<(), String> {
                     return Ok(());
                 }
 
-                TuiKeys::Other(c) => tui_terminal.println("Key: ".to_string() + &c.to_string()),
+                TuiKeys::Other(c) => {
+                    tui_terminal.println("Key: ".to_string() + &c.to_string());
+                    tui_terminal.println("Key: ".to_string() + &(c as u8).to_string());
+                }
             },
             TuiEvent::BufferSizeEvent => tui_terminal.println("Buffer Size Event"),
             _ => {
