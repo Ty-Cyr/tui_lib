@@ -8,8 +8,6 @@ use string_plus::StringPlus;
 pub mod tui_enums;
 use tui_enums::{Color, ThreeBool};
 
-pub mod tui_events;
-
 pub mod tui_keys;
 
 pub mod tui_terminal;

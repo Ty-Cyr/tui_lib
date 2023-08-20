@@ -1,7 +1,7 @@
 use crate::{
     os_tui::{reset_terminal_settings, setup_terminal, InputInterface, TerminalState},
     tui_enums::TuiMode,
-    tui_events::TuiEvent,
+    tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
 use std::io::{stdout, Stdout, StdoutLock, Write};
@@ -207,8 +207,8 @@ impl TuiTerminal {
         _ = output_lock.flush();
     }
 
-    pub fn get_event(&self) -> TuiEvent {
-        return self.input_interface.get_event();
+    pub fn get_keyboard_event(&self) -> Option<TuiKeys> {
+        return self.input_interface.get_keyboard_event();
     }
 }
 

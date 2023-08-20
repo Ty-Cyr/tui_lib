@@ -1,10 +1,10 @@
-use crate::{tui_enums::TuiMode, tui_events::TuiEvent, tui_keys::TuiKeys};
+use crate::{tui_enums::TuiMode, tui_keys::TuiKeys};
 use windows::Win32::{
     Foundation::HANDLE,
     System::Console::{
         GetConsoleMode, GetStdHandle, ReadConsoleInputW, SetConsoleMode, CONSOLE_MODE,
         ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, INPUT_RECORD, KEY_EVENT, KEY_EVENT_RECORD,
-        STD_INPUT_HANDLE, WINDOW_BUFFER_SIZE_EVENT,
+        STD_INPUT_HANDLE,
     },
     UI::Input::KeyboardAndMouse::{
         VIRTUAL_KEY, VK_BACK, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT,
@@ -49,7 +49,7 @@ impl InputInterface {
         return Some(());
     }
 
-    pub fn get_event(&self) -> TuiEvent {
+    pub fn get_keyboard_event(&self) -> Option<TuiKeys> {
         loop {
             let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
             let mut event_count: u32 = 0;
@@ -57,7 +57,7 @@ impl InputInterface {
                 if !ReadConsoleInputW(self.input_handle.clone(), lpbuffer, &mut event_count)
                     .as_bool()
                 {
-                    return TuiEvent::Error;
+                    return None;
                 }
             }
             match lpbuffer[0].EventType as u32 {
@@ -65,17 +65,16 @@ impl InputInterface {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
                     if key_event_data.bKeyDown.as_bool() {
-                        let event: TuiEvent = parse_key_event_data(key_event_data);
+                        let event: Option<TuiKeys> = parse_key_event_data(key_event_data);
                         match event {
-                            TuiEvent::Ignore => continue,
-                            _ => return event,
+                            None => continue,
+                            Some(key_event) => return Some(key_event),
                         }
                     } else {
                         continue;
                     }
                 }
-                WINDOW_BUFFER_SIZE_EVENT => return TuiEvent::BufferSizeEvent,
-                _ => return TuiEvent::Other,
+                _ => return None,
             }
         }
     }
@@ -99,40 +98,40 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
     _ = input_interface.set_console_mode(terminal_state.console_mode);
 }
 
-fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvent {
+fn parse_key_event_data(data: KEY_EVENT_RECORD) -> Option<TuiKeys> {
     loop {
         match VIRTUAL_KEY(data.wVirtualKeyCode) {
-            VK_RETURN => return TuiEvent::KeyEvent(TuiKeys::Enter),
-            VK_LEFT => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
+            VK_RETURN => return Some(TuiKeys::Enter),
+            VK_LEFT => return Some(TuiKeys::LeftArrow),
 
-            VK_UP => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
+            VK_UP => return Some(TuiKeys::UpArrow),
 
-            VK_RIGHT => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
+            VK_RIGHT => return Some(TuiKeys::RightArrow),
 
-            VK_DOWN => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
+            VK_DOWN => return Some(TuiKeys::DownArrow),
 
             VK_BACK => {
-                return TuiEvent::KeyEvent(TuiKeys::Backspace);
+                return Some(TuiKeys::Backspace);
             }
 
             VK_DELETE => {
-                return TuiEvent::KeyEvent(TuiKeys::Delete);
+                return Some(TuiKeys::Delete);
             }
 
             VK_SPACE => {
-                return TuiEvent::KeyEvent(TuiKeys::Space);
+                return Some(TuiKeys::Space);
             }
 
             VK_TAB => {
-                return TuiEvent::KeyEvent(TuiKeys::Tab);
+                return Some(TuiKeys::Tab);
             }
 
             VK_ESCAPE => {
-                return TuiEvent::KeyEvent(TuiKeys::Escape);
+                return Some(TuiKeys::Escape);
             }
 
             VK_SHIFT => {
-                return TuiEvent::Ignore;
+                return None;
             }
 
             _ => {
@@ -141,9 +140,9 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvent {
                     char_option = char::from_u32(data.uChar.UnicodeChar as u32);
                 }
                 if let Some(character) = char_option {
-                    return TuiEvent::KeyEvent(TuiKeys::Other(character));
+                    return Some(TuiKeys::Other(character));
                 } else {
-                    return TuiEvent::Error;
+                    return None;
                 }
             }
         }

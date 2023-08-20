@@ -2,7 +2,6 @@ use tui_lib::{
     string_plus::StringPlus,
     tui_enums::ThreeBool,
     tui_enums::{Color, TuiMode},
-    tui_events::TuiEvent,
     tui_keys::TuiKeys,
     tui_terminal::TuiTerminal,
 };
@@ -17,9 +16,9 @@ fn main() -> Result<(), String> {
     }
     tui_terminal.clear_screen();
     loop {
-        let event: TuiEvent = tui_terminal.get_event();
+        let event: Option<TuiKeys> = tui_terminal.get_keyboard_event();
         match event {
-            TuiEvent::KeyEvent(key) => match key {
+            Some(key) => match key {
                 TuiKeys::Enter => tui_terminal
                     .println(StringPlus::new("NEWLINE").set_font_color(Color::RGB(0, 255, 0))),
                 TuiKeys::LeftArrow => tui_terminal
@@ -53,9 +52,12 @@ fn main() -> Result<(), String> {
                     tui_terminal.println("Key: ".to_string() + &(c as u8).to_string());
                 }
             },
-            TuiEvent::BufferSizeEvent => tui_terminal.println("Buffer Size Event"),
-            _ => {
-                tui_terminal.println("Unknown Event");
+            None => {
+                tui_terminal.println(
+                    StringPlus::new("Failed To Get Keyboard Event")
+                        .set_bold(ThreeBool::True)
+                        .set_font_color(Color::Red),
+                );
             }
         }
     }
