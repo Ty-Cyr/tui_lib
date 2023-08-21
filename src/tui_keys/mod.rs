@@ -10,5 +10,8 @@ pub enum TuiKeys {
     Delete,
     Tab,
     Space,
+    AsciiReadable(char),
     Other(char),
+    Ignore,
+    Error,
 }

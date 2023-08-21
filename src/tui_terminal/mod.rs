@@ -207,7 +207,7 @@ impl TuiTerminal {
         _ = output_lock.flush();
     }
 
-    pub fn get_keyboard_event(&self) -> Option<TuiKeys> {
+    pub fn get_keyboard_event(&self) -> TuiKeys {
         return self.input_interface.get_keyboard_event();
     }
 }

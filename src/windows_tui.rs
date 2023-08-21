@@ -49,7 +49,7 @@ impl InputInterface {
         return Some(());
     }
 
-    pub fn get_keyboard_event(&self) -> Option<TuiKeys> {
+    pub fn get_keyboard_event(&self) -> TuiKeys {
         loop {
             let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
             let mut event_count: u32 = 0;
@@ -57,7 +57,7 @@ impl InputInterface {
                 if !ReadConsoleInputW(self.input_handle.clone(), lpbuffer, &mut event_count)
                     .as_bool()
                 {
-                    return None;
+                    return TuiKeys::Error;
                 }
             }
             match lpbuffer[0].EventType as u32 {
@@ -65,16 +65,16 @@ impl InputInterface {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
                     if key_event_data.bKeyDown.as_bool() {
-                        let event: Option<TuiKeys> = parse_key_event_data(key_event_data);
+                        let event: TuiKeys = parse_key_event_data(key_event_data);
                         match event {
-                            None => continue,
-                            Some(key_event) => return Some(key_event),
+                            TuiKeys::Ignore => continue,
+                            _ => return event,
                         }
                     } else {
                         continue;
                     }
                 }
-                _ => return None,
+                _ => return TuiKeys::Error,
             }
         }
     }
@@ -98,40 +98,40 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
     _ = input_interface.set_console_mode(terminal_state.console_mode);
 }
 
-fn parse_key_event_data(data: KEY_EVENT_RECORD) -> Option<TuiKeys> {
+fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
     loop {
         match VIRTUAL_KEY(data.wVirtualKeyCode) {
-            VK_RETURN => return Some(TuiKeys::Enter),
-            VK_LEFT => return Some(TuiKeys::LeftArrow),
+            VK_RETURN => return TuiKeys::Enter,
+            VK_LEFT => return TuiKeys::LeftArrow,
 
-            VK_UP => return Some(TuiKeys::UpArrow),
+            VK_UP => return TuiKeys::UpArrow,
 
-            VK_RIGHT => return Some(TuiKeys::RightArrow),
+            VK_RIGHT => return TuiKeys::RightArrow,
 
-            VK_DOWN => return Some(TuiKeys::DownArrow),
+            VK_DOWN => return TuiKeys::DownArrow,
 
             VK_BACK => {
-                return Some(TuiKeys::Backspace);
+                return TuiKeys::Backspace;
             }
 
             VK_DELETE => {
-                return Some(TuiKeys::Delete);
+                return TuiKeys::Delete;
             }
 
             VK_SPACE => {
-                return Some(TuiKeys::Space);
+                return TuiKeys::Space;
             }
 
             VK_TAB => {
-                return Some(TuiKeys::Tab);
+                return TuiKeys::Tab;
             }
 
             VK_ESCAPE => {
-                return Some(TuiKeys::Escape);
+                return TuiKeys::Escape;
             }
 
             VK_SHIFT => {
-                return None;
+                return TuiKeys::Ignore;
             }
 
             _ => {
@@ -140,9 +140,13 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> Option<TuiKeys> {
                     char_option = char::from_u32(data.uChar.UnicodeChar as u32);
                 }
                 if let Some(character) = char_option {
-                    return Some(TuiKeys::Other(character));
+                    if (character as u32) > 0x20 && (character as u32) < 0x7E {
+                        return TuiKeys::AsciiReadable(character);
+                    } else {
+                        return TuiKeys::Other(character);
+                    }
                 } else {
-                    return None;
+                    return TuiKeys::Error;
                 }
             }
         }

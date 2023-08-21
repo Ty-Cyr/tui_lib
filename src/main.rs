@@ -16,43 +16,46 @@ fn main() -> Result<(), String> {
     }
     tui_terminal.clear_screen();
     loop {
-        let event: Option<TuiKeys> = tui_terminal.get_keyboard_event();
+        let event: TuiKeys = tui_terminal.get_keyboard_event();
         match event {
-            Some(key) => match key {
-                TuiKeys::Enter => tui_terminal
-                    .println(StringPlus::new("NEWLINE").set_font_color(Color::RGB(0, 255, 0))),
-                TuiKeys::LeftArrow => tui_terminal
-                    .println(StringPlus::new("Left Arrow").set_font_color(Color::RGB(0, 0, 255))),
-                TuiKeys::RightArrow => tui_terminal
-                    .println(StringPlus::new("Right Arrow").set_font_color(Color::RGB(0, 0, 255))),
-                TuiKeys::UpArrow => tui_terminal
-                    .println(StringPlus::new("Up Arrow").set_font_color(Color::RGB(0, 0, 255))),
-                TuiKeys::DownArrow => tui_terminal
-                    .println(StringPlus::new("Down Arrow").set_font_color(Color::RGB(0, 0, 255))),
-                TuiKeys::Backspace => tui_terminal
-                    .println(StringPlus::new("BACKSPACE").set_font_color(Color::RGB(255, 255, 0))),
-                TuiKeys::Delete => tui_terminal
-                    .println(StringPlus::new("DELETE").set_font_color(Color::RGB(255, 255, 0))),
-                TuiKeys::Space => tui_terminal
-                    .println(StringPlus::new("SPACE").set_font_color(Color::RGB(255, 0, 255))),
-                TuiKeys::Tab => tui_terminal
-                    .println(StringPlus::new("TAB").set_font_color(Color::RGB(255, 0, 255))),
-                TuiKeys::Escape => {
-                    tui_terminal.println(
-                        StringPlus::new("ESCAPE")
-                            .set_bold(ThreeBool::True)
-                            .set_underlined(ThreeBool::True),
-                    );
-                    tui_terminal.println("Exiting");
-                    return Ok(());
-                }
+            TuiKeys::Enter => tui_terminal
+                .println(StringPlus::new("NEWLINE").set_font_color(Color::RGB(0, 255, 0))),
+            TuiKeys::LeftArrow => tui_terminal
+                .println(StringPlus::new("Left Arrow").set_font_color(Color::RGB(0, 0, 255))),
+            TuiKeys::RightArrow => tui_terminal
+                .println(StringPlus::new("Right Arrow").set_font_color(Color::RGB(0, 0, 255))),
+            TuiKeys::UpArrow => tui_terminal
+                .println(StringPlus::new("Up Arrow").set_font_color(Color::RGB(0, 0, 255))),
+            TuiKeys::DownArrow => tui_terminal
+                .println(StringPlus::new("Down Arrow").set_font_color(Color::RGB(0, 0, 255))),
+            TuiKeys::Backspace => tui_terminal
+                .println(StringPlus::new("BACKSPACE").set_font_color(Color::RGB(255, 255, 0))),
+            TuiKeys::Delete => tui_terminal
+                .println(StringPlus::new("DELETE").set_font_color(Color::RGB(255, 255, 0))),
+            TuiKeys::Space => tui_terminal
+                .println(StringPlus::new("SPACE").set_font_color(Color::RGB(255, 0, 255))),
+            TuiKeys::Tab => {
+                tui_terminal.println(StringPlus::new("TAB").set_font_color(Color::RGB(255, 0, 255)))
+            }
+            TuiKeys::Escape => {
+                tui_terminal.println(
+                    StringPlus::new("ESCAPE")
+                        .set_bold(ThreeBool::True)
+                        .set_underlined(ThreeBool::True),
+                );
+                tui_terminal.println("Exiting");
+                return Ok(());
+            }
 
-                TuiKeys::Other(c) => {
-                    tui_terminal.println("Key: ".to_string() + &c.to_string());
-                    tui_terminal.println("Key: ".to_string() + &(c as u8).to_string());
-                }
-            },
-            None => {
+            TuiKeys::AsciiReadable(c) => {
+                tui_terminal.println(c.to_string());
+            }
+
+            TuiKeys::Other(c) => {
+                tui_terminal.println("Key: ".to_string() + &c.to_string());
+                tui_terminal.println("Key: ".to_string() + &(c as u8).to_string());
+            }
+            _ => {
                 tui_terminal.println(
                     StringPlus::new("Failed To Get Keyboard Event")
                         .set_bold(ThreeBool::True)
