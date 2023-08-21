@@ -16,6 +16,10 @@ fn main() -> Result<(), String> {
     }
     tui_terminal.clear_screen();
     loop {
+        let (a, b): (u32, u32) = tui_terminal
+            .get_teminal_size()
+            .ok_or("Failed To get Size")?;
+        tui_terminal.println(format!("{}, {}", a, b));
         let event: TuiKeys = tui_terminal.get_keyboard_event();
         match event {
             TuiKeys::Enter => tui_terminal

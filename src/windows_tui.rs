@@ -2,9 +2,10 @@ use crate::{tui_enums::TuiMode, tui_keys::TuiKeys};
 use windows::Win32::{
     Foundation::HANDLE,
     System::Console::{
-        GetConsoleMode, GetStdHandle, ReadConsoleInputW, SetConsoleMode, CONSOLE_MODE,
-        ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, INPUT_RECORD, KEY_EVENT, KEY_EVENT_RECORD,
-        STD_INPUT_HANDLE,
+        GetConsoleMode, GetConsoleScreenBufferInfo, GetStdHandle, ReadConsoleInputW,
+        SetConsoleMode, CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_MOUSE_INPUT,
+        ENABLE_WINDOW_INPUT, INPUT_RECORD, KEY_EVENT, KEY_EVENT_RECORD, STD_INPUT_HANDLE,
+        STD_OUTPUT_HANDLE,
     },
     UI::Input::KeyboardAndMouse::{
         VIRTUAL_KEY, VK_BACK, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT,
@@ -47,6 +48,23 @@ impl InputInterface {
         }
         _ = self.get_console_mode();
         return Some(());
+    }
+
+    pub fn get_size(&self) -> Option<(u32, u32)> {
+        let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
+        unsafe {
+            let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;
+            if !GetConsoleScreenBufferInfo(handle, &mut screen_info_struct).as_bool() {
+                println!("C Failed");
+                return None;
+            }
+        }
+        let size: COORD = screen_info_struct.dwSize;
+        if size.X >= 0 && size.Y >= 0 {
+            return Some((size.X as u32, size.Y as u32));
+        }
+        println!("Invalid Size");
+        return None;
     }
 
     pub fn get_keyboard_event(&self) -> TuiKeys {

@@ -207,6 +207,10 @@ impl TuiTerminal {
         _ = output_lock.flush();
     }
 
+    pub fn get_teminal_size(&self) -> Option<(u32, u32)> {
+        return self.input_interface.get_size();
+    }
+
     pub fn get_keyboard_event(&self) -> TuiKeys {
         return self.input_interface.get_keyboard_event();
     }
