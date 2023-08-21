@@ -81,7 +81,9 @@ impl InputInterface {
             None => return TuiKeys::Escape,
             Some(input_char) => match input_char {
                 '[' => return self.handle_escape_input_s2(),
-                _ => return TuiKeys::Error,
+                _ => {
+                    return TuiKeys::Error;
+                }
             },
         };
     }
@@ -101,7 +103,9 @@ impl InputInterface {
                 }
                 return TuiKeys::Error;
             }
-            _ => return TuiKeys::Error,
+            _ => {
+                return TuiKeys::Error;
+            }
         }
     }
 
