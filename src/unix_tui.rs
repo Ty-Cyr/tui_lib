@@ -1,5 +1,4 @@
 use crate::tui_enums::TuiMode;
-use crate::tui_events::TuiEvent;
 use crate::tui_keys::TuiKeys;
 use libc::{
     c_char, c_void, cfmakeraw, fcntl, read as cread, tcgetattr, tcsetattr, termios, F_GETFL,
@@ -76,56 +75,59 @@ impl InputInterface {
         return Some((buffer[0] as u8) as char);
     }
 
-    fn handle_escape_input_s1(&self) -> TuiEvent {
+    fn handle_escape_input_s1(&self) -> TuiKeys {
         let input_char_option: Option<char> = self.try_read_char();
         match input_char_option {
-            None => return TuiEvent::KeyEvent(TuiKeys::Escape),
+            None => return TuiKeys::Escape,
             Some(input_char) => match input_char {
                 '[' => return self.handle_escape_input_s2(),
-                _ => return TuiEvent::Error,
+                _ => return TuiKeys::Error,
             },
         };
     }
 
-    fn handle_escape_input_s2(&self) -> TuiEvent {
+    fn handle_escape_input_s2(&self) -> TuiKeys {
         let input_char: char = self.read_char();
         match input_char {
-            'A' => return TuiEvent::KeyEvent(TuiKeys::UpArrow),
-            'B' => return TuiEvent::KeyEvent(TuiKeys::DownArrow),
-            'C' => return TuiEvent::KeyEvent(TuiKeys::RightArrow),
-            'D' => return TuiEvent::KeyEvent(TuiKeys::LeftArrow),
+            'A' => return TuiKeys::UpArrow,
+            'B' => return TuiKeys::DownArrow,
+            'C' => return TuiKeys::RightArrow,
+            'D' => return TuiKeys::LeftArrow,
             '3' => {
                 if let Some(input_char) = self.try_read_char() {
                     if input_char == '~' {
-                        return TuiEvent::KeyEvent(TuiKeys::Delete);
+                        return TuiKeys::Delete;
                     }
                 }
-                return TuiEvent::Error;
+                return TuiKeys::Error;
             }
-            _ => return TuiEvent::Other,
+            _ => return TuiKeys::Error,
         }
     }
 
-    pub fn get_event(&self) -> TuiEvent {
+    pub fn get_keyboard_event(&self) -> TuiKeys {
         let input_char: char = self.read_char();
         match input_char {
             '\x1b' => {
                 return self.handle_escape_input_s1();
             }
             '\x7F' => {
-                return TuiEvent::KeyEvent(TuiKeys::Backspace);
+                return TuiKeys::Backspace;
             }
             '\n' | '\r' => {
-                return TuiEvent::KeyEvent(TuiKeys::Enter);
+                return TuiKeys::Enter;
             }
             ' ' => {
-                return TuiEvent::KeyEvent(TuiKeys::Space);
+                return TuiKeys::Space;
             }
             '\t' => {
-                return TuiEvent::KeyEvent(TuiKeys::Tab);
+                return TuiKeys::Tab;
             }
             _ => {
-                return TuiEvent::KeyEvent(TuiKeys::Other(input_char));
+                if (input_char as u32) > 0x20 && (input_char as u32) < 0x7E {
+                    return TuiKeys::AsciiReadable(input_char);
+                }
+                return TuiKeys::Other(input_char);
             }
         }
     }
