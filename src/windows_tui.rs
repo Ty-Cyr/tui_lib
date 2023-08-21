@@ -140,7 +140,7 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
                     char_option = char::from_u32(data.uChar.UnicodeChar as u32);
                 }
                 if let Some(character) = char_option {
-                    if (character as u32) > 0x20 && (character as u32) < 0x7E {
+                    if (character as u32) > 0x20 && (character as u32) < 0x7F {
                         return TuiKeys::AsciiReadable(character);
                     }
                     return TuiKeys::Other(character);
