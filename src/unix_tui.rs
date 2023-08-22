@@ -164,7 +164,7 @@ impl InputInterface {
 }
 
 #[allow(unused)]
-pub fn setup_terminal(tui_mode: &TuiMode) -> Option<(InputInterface, TerminalState)> {
+pub fn setup_terminal() -> Option<(InputInterface, TerminalState)> {
     let input_interface: InputInterface = InputInterface::new();
     let terminal_state: TerminalState = TerminalState {
         termios_struct: input_interface.get_input_mode()?,
