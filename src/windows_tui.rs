@@ -1,4 +1,4 @@
-use crate::{tui_enums::TuiMode, tui_keys::TuiKeys};
+use crate::tui_keys::TuiKeys;
 use windows::Win32::{
     Foundation::HANDLE,
     System::Console::{
@@ -15,7 +15,6 @@ use windows::Win32::{
 #[allow(unused)]
 #[derive(Clone, Copy)]
 pub struct TerminalState {
-    tui_mode: TuiMode,
     console_mode: CONSOLE_MODE,
 }
 pub struct InputInterface {
@@ -98,18 +97,12 @@ impl InputInterface {
     }
 }
 
-pub fn setup_terminal(tui_mode: &TuiMode) -> Option<(InputInterface, TerminalState)> {
+pub fn setup_terminal() -> Option<(InputInterface, TerminalState)> {
     let input_interface: InputInterface = InputInterface::new()?;
     let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
     let new_mode: CONSOLE_MODE = ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT;
     _ = input_interface.set_console_mode(new_mode)?;
-    return Some((
-        input_interface,
-        TerminalState {
-            tui_mode: tui_mode.clone(),
-            console_mode,
-        },
-    ));
+    return Some((input_interface, TerminalState { console_mode }));
 }
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {

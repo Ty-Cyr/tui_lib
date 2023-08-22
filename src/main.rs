@@ -8,13 +8,12 @@ use tui_lib::{
 
 fn main() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal;
-    match TuiTerminal::new(TuiMode::Standard) {
+    match TuiTerminal::new(TuiMode::FullScreen) {
         Some(tui_terminal_instance) => tui_terminal = tui_terminal_instance,
         None => {
             return Err("Failed To Setup Terminal".to_string());
         }
     }
-    tui_terminal.clear_screen();
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()

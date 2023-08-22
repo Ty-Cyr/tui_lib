@@ -20,9 +20,8 @@ pub struct TuiTerminal {
 
 impl TuiTerminal {
     pub fn new(tui_mode: TuiMode) -> Option<TuiTerminal> {
-        let (input_interface, terminal_state): (InputInterface, TerminalState) =
-            setup_terminal(&tui_mode)?;
-        return Some(TuiTerminal {
+        let (input_interface, terminal_state): (InputInterface, TerminalState) = setup_terminal()?;
+        let mut tui_terminal = TuiTerminal {
             font_color: Color::Default,
             background_color: Color::Default,
             is_bold: ThreeBool::Default,
@@ -31,7 +30,12 @@ impl TuiTerminal {
             output_interface: stdout(),
             input_interface: input_interface,
             terminal_state: terminal_state,
-        });
+        };
+        match tui_mode {
+            TuiMode::FullScreen => tui_terminal.alt_buffer(),
+            _ => {}
+        }
+        return Some(tui_terminal);
     }
     fn send_font_color_code(&self, color: Color) {
         let mut output_lock: StdoutLock = self.output_interface.lock();
@@ -214,6 +218,15 @@ impl TuiTerminal {
     pub fn get_keyboard_event(&self) -> TuiKeys {
         return self.input_interface.get_keyboard_event();
     }
+
+    fn alt_buffer(&mut self) {
+        _ = self.output_interface.write("\x1b[?1049h".as_bytes());
+        _ = self.output_interface.write("\x1b[0;0f".as_bytes());
+    }
+
+    fn main_buffer(&mut self) {
+        _ = self.output_interface.write("\x1b[?1049l".as_bytes());
+    }
 }
 
 impl Drop for TuiTerminal {
@@ -224,6 +237,7 @@ impl Drop for TuiTerminal {
         self.is_underlined = ThreeBool::Default;
         self.is_inverted = ThreeBool::Default;
         self.reset_font_settings();
+        self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
     }
 }
