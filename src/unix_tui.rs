@@ -1,10 +1,12 @@
 use crate::tui_enums::TuiMode;
 use crate::tui_keys::TuiKeys;
 use libc::{
-    c_char, c_void, cfmakeraw, fcntl, read as cread, tcgetattr, tcsetattr, termios, F_GETFL,
-    F_SETFL, ONLCR, OPOST, O_NONBLOCK, TCSADRAIN,
+    __errno_location, c_char, c_void, cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr,
+    tcsetattr, termios, winsize, F_GETFL, F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO,
+    TCSADRAIN, TIOCGWINSZ,
 };
 
+use std::fs::OpenOptions;
 use std::io::stdin;
 use std::os::unix::prelude::AsRawFd;
 
@@ -49,7 +51,7 @@ impl InputInterface {
 
     fn read_char(&self) -> char {
         let mut buffer: [c_char; 1] = [0];
-        unsafe { cread(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) };
+        unsafe { c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) };
 
         return (buffer[0] as u8) as char;
     }
@@ -62,7 +64,7 @@ impl InputInterface {
                 F_SETFL,
                 fcntl(self.input_fd.clone(), F_GETFL) | O_NONBLOCK,
             );
-            if 1 != cread(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) {
+            if 1 != c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) {
                 return None;
             }
             fcntl(
@@ -107,6 +109,30 @@ impl InputInterface {
                 return TuiKeys::Error;
             }
         }
+    }
+
+    pub fn get_size(self) -> Option<(u16, u16)> {
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open("/dev/tty")
+            .ok()?;
+        let fd = file.as_raw_fd();
+        let mut window_size: winsize = winsize {
+            ws_row: 0,
+            ws_col: 0,
+            ws_xpixel: 0,
+            ws_ypixel: 0,
+        };
+        unsafe {
+            if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
+                println!("{}", fd);
+                println!("Errno: {}", *__errno_location());
+                return None;
+            }
+        }
+        _ = file.as_raw_fd();
+        return Some((window_size.ws_col as u16, window_size.ws_row as u16));
     }
 
     pub fn get_keyboard_event(&self) -> TuiKeys {

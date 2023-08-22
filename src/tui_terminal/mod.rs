@@ -207,7 +207,7 @@ impl TuiTerminal {
         _ = output_lock.flush();
     }
 
-    pub fn get_teminal_size(&self) -> Option<(u32, u32)> {
+    pub fn get_teminal_size(&self) -> Option<(u16, u16)> {
         return self.input_interface.get_size();
     }
 
