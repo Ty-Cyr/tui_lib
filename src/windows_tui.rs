@@ -50,7 +50,7 @@ impl InputInterface {
         return Some(());
     }
 
-    pub fn get_size(&self) -> Option<(u32, u32)> {
+    pub fn get_size(&self) -> Option<(u16, u16)> {
         let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
         unsafe {
             let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;
@@ -61,7 +61,7 @@ impl InputInterface {
         }
         let size: COORD = screen_info_struct.dwSize;
         if size.X >= 0 && size.Y >= 0 {
-            return Some((size.X as u32, size.Y as u32));
+            return Some((size.X as u16, size.Y as u16));
         }
         println!("Invalid Size");
         return None;
