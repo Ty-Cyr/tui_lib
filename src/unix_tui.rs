@@ -1,4 +1,3 @@
-use crate::tui_enums::TuiMode;
 use crate::tui_keys::TuiKeys;
 use libc::{
     __errno_location, c_char, c_void, cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr,
