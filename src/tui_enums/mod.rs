@@ -26,7 +26,12 @@ pub enum ThreeBool {
 }
 
 #[derive(Clone, Copy)]
-pub enum KeyEvent {
-    KeyUp,
-    KeyDown,
+pub enum CursorMode {
+    Default,
+    BlinkingBlock,
+    SteadyBlock,
+    BlinkingUnderline,
+    StedayUnderline,
+    BlinkingBar,
+    SteadyBar,
 }

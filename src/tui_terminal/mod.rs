@@ -4,7 +4,7 @@ use crate::{
     os_tui::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
-    tui_enums::TuiMode,
+    tui_enums::{CursorMode, TuiMode},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
@@ -16,6 +16,7 @@ pub struct TuiTerminal {
     is_bold: ThreeBool,
     is_underlined: ThreeBool,
     is_inverted: ThreeBool,
+    cursor_mode: CursorMode,
     output_interface: OutputInterface,
     input_interface: InputInterface,
     terminal_state: TerminalState,
@@ -34,6 +35,7 @@ impl TuiTerminal {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            cursor_mode: CursorMode::Default,
             output_interface: output_interface,
             input_interface: input_interface,
             terminal_state: terminal_state,
@@ -135,6 +137,22 @@ impl TuiTerminal {
         }
     }
 
+    fn send_cursor_code(&mut self) {
+        match self.cursor_mode {
+            CursorMode::BlinkingBlock => _ = self.output_interface.write("\x1b[1\x20q".as_bytes()),
+            CursorMode::SteadyBlock => _ = self.output_interface.write("\x1b[2\x20q".as_bytes()),
+            CursorMode::BlinkingUnderline => {
+                _ = self.output_interface.write("\x1b[3\x20q".as_bytes())
+            }
+            CursorMode::StedayUnderline => {
+                _ = self.output_interface.write("\x1b[4\x20q".as_bytes())
+            }
+            CursorMode::BlinkingBar => _ = self.output_interface.write("\x1b[5\x20q".as_bytes()),
+            CursorMode::SteadyBar => _ = self.output_interface.write("\x1b[6\x20q".as_bytes()),
+            _ => _ = self.output_interface.write("\x1b[0\x20q".as_bytes()),
+        }
+    }
+
     fn reset_font_settings(&mut self) {
         _ = self.output_interface.write("\x1b[m".as_bytes());
         self.send_font_color_code(self.font_color);
@@ -164,6 +182,11 @@ impl TuiTerminal {
 
     pub fn set_inverted(&mut self, is_inverted: ThreeBool) {
         self.is_inverted = is_inverted;
+    }
+
+    pub fn set_cursor(&mut self, cursor_mode: CursorMode) {
+        self.cursor_mode = cursor_mode;
+        self.send_cursor_code();
     }
 
     fn send_string_plus_codes(&mut self, string_plus: &StringPlus) {
@@ -238,6 +261,8 @@ impl Drop for TuiTerminal {
         self.is_bold = ThreeBool::Default;
         self.is_underlined = ThreeBool::Default;
         self.is_inverted = ThreeBool::Default;
+        self.cursor_mode = CursorMode::Default;
+        self.send_cursor_code();
         self.reset_font_settings();
         self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);

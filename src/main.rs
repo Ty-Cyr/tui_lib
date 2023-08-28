@@ -1,19 +1,15 @@
 use tui_lib::{
     string_plus::StringPlus,
     tui_enums::ThreeBool,
-    tui_enums::{Color, TuiMode},
+    tui_enums::{Color, CursorMode, TuiMode},
     tui_keys::TuiKeys,
     tui_terminal::TuiTerminal,
 };
 
 fn main() -> Result<(), String> {
-    let mut tui_terminal: TuiTerminal;
-    match TuiTerminal::new(TuiMode::FullScreen) {
-        Some(tui_terminal_instance) => tui_terminal = tui_terminal_instance,
-        None => {
-            return Err("Failed To Setup Terminal".to_string());
-        }
-    }
+    let mut tui_terminal: TuiTerminal =
+        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
+    tui_terminal.set_cursor(CursorMode::BlinkingBlock);
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
