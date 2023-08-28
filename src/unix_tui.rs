@@ -6,7 +6,7 @@ use libc::{
 };
 
 use std::fs::OpenOptions;
-use std::io::stdin;
+use std::io::{stdin, stdout, Stdout, Write};
 use std::os::unix::prelude::AsRawFd;
 
 #[derive(Clone, Copy)]
@@ -110,30 +110,6 @@ impl InputInterface {
         }
     }
 
-    pub fn get_size(self) -> Option<(u16, u16)> {
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open("/dev/tty")
-            .ok()?;
-        let fd = file.as_raw_fd();
-        let mut window_size: winsize = winsize {
-            ws_row: 0,
-            ws_col: 0,
-            ws_xpixel: 0,
-            ws_ypixel: 0,
-        };
-        unsafe {
-            if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
-                println!("{}", fd);
-                println!("Errno: {}", *__errno_location());
-                return None;
-            }
-        }
-        _ = file.as_raw_fd();
-        return Some((window_size.ws_col as u16, window_size.ws_row as u16));
-    }
-
     pub fn get_keyboard_event(&self) -> TuiKeys {
         let input_char: char = self.read_char();
         match input_char {
@@ -162,18 +138,59 @@ impl InputInterface {
     }
 }
 
-#[allow(unused)]
-pub fn setup_terminal() -> Option<(InputInterface, TerminalState)> {
+pub struct OutputInterface {
+    output_handle: Stdout,
+}
+
+impl OutputInterface {
+    pub fn get_size(&self) -> Option<(u16, u16)> {
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open("/dev/tty")
+            .ok()?;
+        let fd = file.as_raw_fd();
+        let mut window_size: winsize = winsize {
+            ws_row: 0,
+            ws_col: 0,
+            ws_xpixel: 0,
+            ws_ypixel: 0,
+        };
+        unsafe {
+            if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
+                println!("{}", fd);
+                println!("Errno: {}", *__errno_location());
+                return None;
+            }
+        }
+        _ = file.as_raw_fd();
+        return Some((window_size.ws_col as u16, window_size.ws_row as u16));
+    }
+}
+
+impl Write for OutputInterface {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        return self.output_handle.write(buf);
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        return self.output_handle.flush();
+    }
+}
+
+pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
     let input_interface: InputInterface = InputInterface::new();
+    let output_interface: OutputInterface = OutputInterface {
+        output_handle: stdout(),
+    };
     let terminal_state: TerminalState = TerminalState {
         termios_struct: input_interface.get_input_mode()?,
     };
     input_interface.set_input_mode(input_interface.get_raw_termios_struct());
 
-    return Some((input_interface, terminal_state));
+    return Some((input_interface, output_interface, terminal_state));
 }
 
-#[allow(unused)]
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
     input_interface.set_input_mode(terminal_state.termios_struct);
 }

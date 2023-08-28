@@ -14,11 +14,13 @@ use windows::Win32::{
         VK_SHIFT, VK_SPACE, VK_TAB, VK_UP,
     },
 };
-#[allow(unused)]
+
 #[derive(Clone, Copy)]
 pub struct TerminalState {
     console_mode: CONSOLE_MODE,
 }
+
+#[derive(Clone, Copy)]
 pub struct InputInterface {
     input_handle: HANDLE,
 }
@@ -82,6 +84,7 @@ impl InputInterface {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct OutputInterface {
     output_handle: Stdout,
 }
