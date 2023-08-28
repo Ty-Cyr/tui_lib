@@ -1,10 +1,13 @@
+use std::io::Write;
+
 use crate::{
-    os_tui::{reset_terminal_settings, setup_terminal, InputInterface, TerminalState},
+    os_tui::{
+        reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
+    },
     tui_enums::TuiMode,
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
-use std::io::{stdout, Stdout, StdoutLock, Write};
 
 #[allow(unused)]
 pub struct TuiTerminal {
@@ -13,21 +16,25 @@ pub struct TuiTerminal {
     is_bold: ThreeBool,
     is_underlined: ThreeBool,
     is_inverted: ThreeBool,
-    output_interface: Stdout,
+    output_interface: OutputInterface,
     input_interface: InputInterface,
     terminal_state: TerminalState,
 }
 
 impl TuiTerminal {
     pub fn new(tui_mode: TuiMode) -> Option<TuiTerminal> {
-        let (input_interface, terminal_state): (InputInterface, TerminalState) = setup_terminal()?;
+        let (input_interface, output_interface, terminal_state): (
+            InputInterface,
+            OutputInterface,
+            TerminalState,
+        ) = setup_terminal()?;
         let mut tui_terminal = TuiTerminal {
             font_color: Color::Default,
             background_color: Color::Default,
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
-            output_interface: stdout(),
+            output_interface: output_interface,
             input_interface: input_interface,
             terminal_state: terminal_state,
         };
@@ -37,19 +44,19 @@ impl TuiTerminal {
         }
         return Some(tui_terminal);
     }
-    fn send_font_color_code(&self, color: Color) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
+    fn send_font_color_code(&mut self, color: Color) {
         match color {
-            Color::White => _ = output_lock.write("\x1b[37m".as_bytes()),
-            Color::Black => _ = output_lock.write("\x1b[30m".as_bytes()),
-            Color::Red => _ = output_lock.write("\x1b[31m".as_bytes()),
-            Color::Green => _ = output_lock.write("\x1b[32m".as_bytes()),
-            Color::Blue => _ = output_lock.write("\x1b[34m".as_bytes()),
-            Color::Yellow => _ = output_lock.write("\x1b[33m".as_bytes()),
-            Color::Magenta => _ = output_lock.write("\x1b[35m".as_bytes()),
-            Color::Cyan => _ = output_lock.write("\x1b[36m".as_bytes()),
+            Color::White => _ = self.output_interface.write("\x1b[37m".as_bytes()),
+            Color::Black => _ = self.output_interface.write("\x1b[30m".as_bytes()),
+            Color::Red => _ = self.output_interface.write("\x1b[31m".as_bytes()),
+            Color::Green => _ = self.output_interface.write("\x1b[32m".as_bytes()),
+            Color::Blue => _ = self.output_interface.write("\x1b[34m".as_bytes()),
+            Color::Yellow => _ = self.output_interface.write("\x1b[33m".as_bytes()),
+            Color::Magenta => _ = self.output_interface.write("\x1b[35m".as_bytes()),
+            Color::Cyan => _ = self.output_interface.write("\x1b[36m".as_bytes()),
             Color::CC256(code) => {
-                _ = output_lock
+                _ = self
+                    .output_interface
                     .write(("\x1b[38;5;".to_owned() + &code.to_string() + "m").as_bytes());
             }
             Color::RGB(r, g, b) => {
@@ -60,24 +67,24 @@ impl TuiTerminal {
                     + ";"
                     + &b.to_string()
                     + "m";
-                _ = output_lock.write(code.as_bytes());
+                _ = self.output_interface.write(code.as_bytes());
             }
             _ => {}
         }
     }
-    fn send_background_color_code(&self, color: Color) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
+    fn send_background_color_code(&mut self, color: Color) {
         match color {
-            Color::White => _ = output_lock.write("\x1b[47m".as_bytes()),
-            Color::Black => _ = output_lock.write("\x1b[40m".as_bytes()),
-            Color::Red => _ = output_lock.write("\x1b[41m".as_bytes()),
-            Color::Green => _ = output_lock.write("\x1b[42m".as_bytes()),
-            Color::Blue => _ = output_lock.write("\x1b[44m".as_bytes()),
-            Color::Yellow => _ = output_lock.write("\x1b[43m".as_bytes()),
-            Color::Magenta => _ = output_lock.write("\x1b[45m".as_bytes()),
-            Color::Cyan => _ = output_lock.write("\x1b[46m".as_bytes()),
+            Color::White => _ = self.output_interface.write("\x1b[47m".as_bytes()),
+            Color::Black => _ = self.output_interface.write("\x1b[40m".as_bytes()),
+            Color::Red => _ = self.output_interface.write("\x1b[41m".as_bytes()),
+            Color::Green => _ = self.output_interface.write("\x1b[42m".as_bytes()),
+            Color::Blue => _ = self.output_interface.write("\x1b[44m".as_bytes()),
+            Color::Yellow => _ = self.output_interface.write("\x1b[43m".as_bytes()),
+            Color::Magenta => _ = self.output_interface.write("\x1b[45m".as_bytes()),
+            Color::Cyan => _ = self.output_interface.write("\x1b[46m".as_bytes()),
             Color::CC256(code) => {
-                _ = output_lock
+                _ = self
+                    .output_interface
                     .write(("\x1b[48;5;".to_owned() + &code.to_string() + "m").as_bytes());
             }
             Color::RGB(r, g, b) => {
@@ -88,44 +95,41 @@ impl TuiTerminal {
                     + ";"
                     + &b.to_string()
                     + "m";
-                _ = output_lock.write(code.as_bytes());
+                _ = self.output_interface.write(code.as_bytes());
             }
             _ => {}
         }
-        _ = output_lock.write("\x1b[0K".as_bytes());
+        _ = self.output_interface.write("\x1b[0K".as_bytes());
     }
 
     fn send_bold_code(&mut self, is_bold: ThreeBool) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
         match is_bold {
-            ThreeBool::True => _ = output_lock.write("\x1b[1m".as_bytes()),
+            ThreeBool::True => _ = self.output_interface.write("\x1b[1m".as_bytes()),
             ThreeBool::False => {}
             ThreeBool::Default => match self.is_bold {
-                ThreeBool::True => _ = output_lock.write("\x1b[1m".as_bytes()),
+                ThreeBool::True => _ = self.output_interface.write("\x1b[1m".as_bytes()),
                 _ => {}
             },
         }
     }
 
     fn send_underlined_code(&mut self, is_underlined: ThreeBool) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
         match is_underlined {
-            ThreeBool::True => _ = output_lock.write("\x1b[4m".as_bytes()),
+            ThreeBool::True => _ = self.output_interface.write("\x1b[4m".as_bytes()),
             ThreeBool::False => {}
             ThreeBool::Default => match self.is_underlined {
-                ThreeBool::True => _ = output_lock.write("\x1b[4m".as_bytes()),
+                ThreeBool::True => _ = self.output_interface.write("\x1b[4m".as_bytes()),
                 _ => {}
             },
         }
     }
 
     fn send_inverted_code(&mut self, is_inverted: ThreeBool) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
         match is_inverted {
-            ThreeBool::True => _ = output_lock.write("\x1b[7m".as_bytes()),
+            ThreeBool::True => _ = self.output_interface.write("\x1b[7m".as_bytes()),
             ThreeBool::False => {}
             ThreeBool::Default => match self.is_inverted {
-                ThreeBool::True => _ = output_lock.write("\x1b[7m".as_bytes()),
+                ThreeBool::True => _ = self.output_interface.write("\x1b[7m".as_bytes()),
                 _ => {}
             },
         }
@@ -200,19 +204,17 @@ impl TuiTerminal {
     }
 
     pub fn clear_screen(&mut self) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
-        _ = output_lock.write("\x1bc".as_bytes());
-        _ = output_lock.flush();
+        _ = self.output_interface.write("\x1bc".as_bytes());
+        _ = self.output_interface.flush();
     }
 
     pub fn clear_line(&mut self) {
-        let mut output_lock: StdoutLock = self.output_interface.lock();
-        _ = output_lock.write("\x1b[0K".as_bytes());
-        _ = output_lock.flush();
+        _ = self.output_interface.write("\x1b[0K".as_bytes());
+        _ = self.output_interface.flush();
     }
 
     pub fn get_teminal_size(&self) -> Option<(u16, u16)> {
-        return self.input_interface.get_size();
+        return self.output_interface.get_size();
     }
 
     pub fn get_keyboard_event(&self) -> TuiKeys {

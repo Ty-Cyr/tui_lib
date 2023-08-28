@@ -1,3 +1,5 @@
+use std::io::{stdout, Stdout, Write};
+
 use crate::tui_keys::TuiKeys;
 use windows::Win32::{
     Foundation::HANDLE,
@@ -49,23 +51,6 @@ impl InputInterface {
         return Some(());
     }
 
-    pub fn get_size(&self) -> Option<(u16, u16)> {
-        let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
-        unsafe {
-            let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;
-            if !GetConsoleScreenBufferInfo(handle, &mut screen_info_struct).as_bool() {
-                println!("C Failed");
-                return None;
-            }
-        }
-        let size: COORD = screen_info_struct.dwSize;
-        if size.X >= 0 && size.Y >= 0 {
-            return Some((size.X as u16, size.Y as u16));
-        }
-        println!("Invalid Size");
-        return None;
-    }
-
     pub fn get_keyboard_event(&self) -> TuiKeys {
         loop {
             let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
@@ -97,12 +82,50 @@ impl InputInterface {
     }
 }
 
-pub fn setup_terminal() -> Option<(InputInterface, TerminalState)> {
+pub struct OutputInterface {
+    output_handle: Stdout,
+}
+
+impl OutputInterface {
+    pub fn get_size(&self) -> Option<(u16, u16)> {
+        let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
+        unsafe {
+            let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;
+            if !GetConsoleScreenBufferInfo(handle, &mut screen_info_struct).as_bool() {
+                return None;
+            }
+        }
+        let size: COORD = screen_info_struct.dwSize;
+        if size.X >= 0 && size.Y >= 0 {
+            return Some((size.X as u16, size.Y as u16));
+        }
+        return None;
+    }
+}
+
+impl Write for OutputInterface {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        return self.output_handle.write(buf);
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        return self.output_handle.flush();
+    }
+}
+
+pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
     let input_interface: InputInterface = InputInterface::new()?;
     let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
+    let output_interface: OutputInterface = OutputInterface {
+        output_handle: stdout(),
+    };
     let new_mode: CONSOLE_MODE = ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT;
     _ = input_interface.set_console_mode(new_mode)?;
-    return Some((input_interface, TerminalState { console_mode }));
+    return Some((
+        input_interface,
+        output_interface,
+        TerminalState { console_mode },
+    ));
 }
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
