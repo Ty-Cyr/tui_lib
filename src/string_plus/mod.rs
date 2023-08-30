@@ -59,7 +59,7 @@ impl<T: Into<StringPlus>> StringPlusTrait for T {
 
     fn set_bold(self, is_bold: ThreeBool) -> StringPlus {
         let mut string_plus = self.into();
-        string_plus.is_underlined = is_bold;
+        string_plus.is_bold = is_bold;
         return string_plus;
     }
 
@@ -112,8 +112,8 @@ pub trait AsSp {
     fn as_sp(self) -> StringPlus;
 }
 
-impl<T: Into<StringPlus>> AsSp for T {
+impl<T: ToString> AsSp for T {
     fn as_sp(self) -> StringPlus {
-        return self.into();
+        return self.to_string().into();
     }
 }
