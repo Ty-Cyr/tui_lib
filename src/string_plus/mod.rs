@@ -95,10 +95,10 @@ impl From<&str> for StringPlus {
     }
 }
 
-impl Into<StringPlus> for String {
-    fn into(self) -> StringPlus {
+impl From<String> for StringPlus {
+    fn from(value: String) -> Self {
         return StringPlus {
-            string: self,
+            string: value,
             font_color: Color::Default,
             background_color: Color::Default,
             is_bold: ThreeBool::Default,
