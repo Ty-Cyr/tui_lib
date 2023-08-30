@@ -49,13 +49,21 @@ impl TuiTerminal {
     fn send_font_color_code(&mut self, color: Color) {
         match color {
             Color::White => _ = self.output_interface.write("\x1b[37m".as_bytes()),
+            Color::BrightWhite => _ = self.output_interface.write("\x1b[97m".as_bytes()),
             Color::Black => _ = self.output_interface.write("\x1b[30m".as_bytes()),
+            Color::BrightBlack => _ = self.output_interface.write("\x1b[90m".as_bytes()),
             Color::Red => _ = self.output_interface.write("\x1b[31m".as_bytes()),
+            Color::BrightRed => _ = self.output_interface.write("\x1b[91m".as_bytes()),
             Color::Green => _ = self.output_interface.write("\x1b[32m".as_bytes()),
+            Color::BrightGreen => _ = self.output_interface.write("\x1b[92m".as_bytes()),
             Color::Blue => _ = self.output_interface.write("\x1b[34m".as_bytes()),
+            Color::BrightBlue => _ = self.output_interface.write("\x1b[94m".as_bytes()),
             Color::Yellow => _ = self.output_interface.write("\x1b[33m".as_bytes()),
+            Color::BrightYellow => _ = self.output_interface.write("\x1b[93m".as_bytes()),
             Color::Magenta => _ = self.output_interface.write("\x1b[35m".as_bytes()),
+            Color::BrightMagenta => _ = self.output_interface.write("\x1b[95m".as_bytes()),
             Color::Cyan => _ = self.output_interface.write("\x1b[36m".as_bytes()),
+            Color::BrightCyan => _ = self.output_interface.write("\x1b[96m".as_bytes()),
             Color::CC256(code) => {
                 _ = self
                     .output_interface
@@ -71,19 +79,27 @@ impl TuiTerminal {
                     + "m";
                 _ = self.output_interface.write(code.as_bytes());
             }
-            _ => {}
+            Color::Default => {}
         }
     }
     fn send_background_color_code(&mut self, color: Color) {
         match color {
             Color::White => _ = self.output_interface.write("\x1b[47m".as_bytes()),
+            Color::BrightWhite => _ = self.output_interface.write("\x1b[107m".as_bytes()),
             Color::Black => _ = self.output_interface.write("\x1b[40m".as_bytes()),
+            Color::BrightBlack => _ = self.output_interface.write("\x1b[100m".as_bytes()),
             Color::Red => _ = self.output_interface.write("\x1b[41m".as_bytes()),
+            Color::BrightRed => _ = self.output_interface.write("\x1b[101m".as_bytes()),
             Color::Green => _ = self.output_interface.write("\x1b[42m".as_bytes()),
+            Color::BrightGreen => _ = self.output_interface.write("\x1b[102m".as_bytes()),
             Color::Blue => _ = self.output_interface.write("\x1b[44m".as_bytes()),
+            Color::BrightBlue => _ = self.output_interface.write("\x1b[104m".as_bytes()),
             Color::Yellow => _ = self.output_interface.write("\x1b[43m".as_bytes()),
+            Color::BrightYellow => _ = self.output_interface.write("\x1b[103m".as_bytes()),
             Color::Magenta => _ = self.output_interface.write("\x1b[45m".as_bytes()),
+            Color::BrightMagenta => _ = self.output_interface.write("\x1b[105m".as_bytes()),
             Color::Cyan => _ = self.output_interface.write("\x1b[46m".as_bytes()),
+            Color::BrightCyan => _ = self.output_interface.write("\x1b[106m".as_bytes()),
             Color::CC256(code) => {
                 _ = self
                     .output_interface
@@ -99,7 +115,7 @@ impl TuiTerminal {
                     + "m";
                 _ = self.output_interface.write(code.as_bytes());
             }
-            _ => {}
+            Color::Default => {}
         }
         _ = self.output_interface.write("\x1b[0K".as_bytes());
     }
@@ -149,7 +165,7 @@ impl TuiTerminal {
             }
             CursorMode::BlinkingBar => _ = self.output_interface.write("\x1b[5\x20q".as_bytes()),
             CursorMode::SteadyBar => _ = self.output_interface.write("\x1b[6\x20q".as_bytes()),
-            _ => _ = self.output_interface.write("\x1b[0\x20q".as_bytes()),
+            CursorMode::Default => _ = self.output_interface.write("\x1b[0\x20q".as_bytes()),
         }
     }
 

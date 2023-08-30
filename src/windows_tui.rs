@@ -84,7 +84,6 @@ impl InputInterface {
     }
 }
 
-#[derive(Clone, Copy)]
 pub struct OutputInterface {
     output_handle: Stdout,
 }
