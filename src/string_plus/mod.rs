@@ -11,17 +11,6 @@ pub struct StringPlus {
 }
 
 impl StringPlus {
-    pub fn new(string: &str) -> StringPlus {
-        return StringPlus {
-            string: string.to_string(),
-            font_color: Color::Default,
-            background_color: Color::Default,
-            is_bold: ThreeBool::Default,
-            is_underlined: ThreeBool::Default,
-            is_inverted: ThreeBool::Default,
-        };
-    }
-
     pub fn get_font_color(&self) -> Color {
         return self.font_color;
     }
@@ -34,35 +23,56 @@ impl StringPlus {
     pub fn get_background_color(&self) -> Color {
         return self.background_color;
     }
-    pub fn set_background_color(mut self, color: Color) -> StringPlus {
-        self.background_color = color;
-        return self;
-    }
 
     pub fn get_bold(&self) -> ThreeBool {
         return self.is_bold;
-    }
-
-    pub fn set_bold(mut self, is_bold: ThreeBool) -> StringPlus {
-        self.is_bold = is_bold;
-        return self;
     }
 
     pub fn get_underlined(&self) -> ThreeBool {
         return self.is_underlined;
     }
 
-    pub fn set_underlined(mut self, is_underlined: ThreeBool) -> StringPlus {
-        self.is_underlined = is_underlined;
-        return self;
-    }
-
     pub fn get_inverted(&self) -> ThreeBool {
         return self.is_inverted;
     }
-    pub fn set_inverted(mut self, is_inverted: ThreeBool) -> StringPlus {
-        self.is_inverted = is_inverted;
-        return self;
+}
+
+pub trait StringPlusTrait {
+    fn set_font_color(self, color: Color) -> StringPlus;
+    fn set_background_color(self, color: Color) -> StringPlus;
+    fn set_bold(self, is_bold: ThreeBool) -> StringPlus;
+    fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus;
+    fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus;
+}
+
+impl<T: Into<StringPlus>> StringPlusTrait for T {
+    fn set_font_color(self, color: Color) -> StringPlus {
+        let mut string_plus = self.into();
+        string_plus.font_color = color;
+        return string_plus;
+    }
+    fn set_background_color(self, color: Color) -> StringPlus {
+        let mut string_plus = self.into();
+        string_plus.background_color = color;
+        return string_plus;
+    }
+
+    fn set_bold(self, is_bold: ThreeBool) -> StringPlus {
+        let mut string_plus = self.into();
+        string_plus.is_underlined = is_bold;
+        return string_plus;
+    }
+
+    fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus {
+        let mut string_plus = self.into();
+        string_plus.is_underlined = is_underlined;
+        return string_plus;
+    }
+
+    fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus {
+        let mut string_plus = self.into();
+        string_plus.is_inverted = is_inverted;
+        return string_plus;
     }
 }
 
