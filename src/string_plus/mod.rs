@@ -76,9 +76,15 @@ impl<T: Into<StringPlus>> StringPlusTrait for T {
     }
 }
 
-impl Into<String> for StringPlus {
-    fn into(self) -> String {
-        return self.string;
+impl From<&StringPlus> for String {
+    fn from(value: &StringPlus) -> Self {
+        return value.string.to_owned();
+    }
+}
+
+impl ToString for StringPlus {
+    fn to_string(&self) -> String {
+        return self.into();
     }
 }
 

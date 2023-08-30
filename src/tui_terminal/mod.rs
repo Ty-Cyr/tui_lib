@@ -216,7 +216,7 @@ impl TuiTerminal {
 
     pub fn println<T: Into<StringPlus>>(&mut self, string_plus: T) {
         let string_plus: StringPlus = string_plus.into();
-        let string: String = string_plus.clone().into();
+        let string: String = (&string_plus).into();
         for line in string.split("\n") {
             self.send_string_plus_codes(&string_plus);
             _ = self.output_interface.write(line.as_bytes());
@@ -228,7 +228,7 @@ impl TuiTerminal {
 
     pub fn print<T: Into<StringPlus>>(&mut self, string_plus: T) {
         let string_plus: StringPlus = string_plus.into();
-        let string: String = string_plus.clone().into();
+        let string: String = (&string_plus).into();
         let mut line_number: usize = 0;
         for line in string.split("\n") {
             self.send_string_plus_codes(&string_plus);
