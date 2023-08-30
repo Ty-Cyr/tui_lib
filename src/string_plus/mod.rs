@@ -97,3 +97,13 @@ impl Into<StringPlus> for String {
         };
     }
 }
+
+pub trait AsSp {
+    fn as_sp(self) -> StringPlus;
+}
+
+impl<T: Into<StringPlus>> AsSp for T {
+    fn as_sp(self) -> StringPlus {
+        return self.into();
+    }
+}
