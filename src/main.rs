@@ -10,7 +10,7 @@ fn main() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
     tui_terminal.set_cursor(CursorMode::Default);
-    tui_terminal.println("White".to_owned().set_font_color(Color::White));
+    tui_terminal.println("White".set_font_color(Color::White));
     tui_terminal.println("White".set_background_color(Color::White));
     tui_terminal.println("Bright White".set_font_color(Color::BrightWhite));
     tui_terminal.println("Bright White".set_background_color(Color::BrightWhite));
