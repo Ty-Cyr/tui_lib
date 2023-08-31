@@ -1,8 +1,7 @@
 use crate::tui_keys::TuiKeys;
 use libc::{
-    __errno_location, c_char, c_void, cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr,
-    tcsetattr, termios, winsize, F_GETFL, F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO,
-    TCSADRAIN, TIOCGWINSZ,
+    c_char, c_void, cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr, tcsetattr, termios,
+    winsize, F_GETFL, F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ,
 };
 
 use std::fs::OpenOptions;
@@ -149,7 +148,6 @@ impl OutputInterface {
             .write(true)
             .open("/dev/tty")
             .ok()?;
-        let fd = file.as_raw_fd();
         let mut window_size: winsize = winsize {
             ws_row: 0,
             ws_col: 0,
@@ -158,8 +156,6 @@ impl OutputInterface {
         };
         unsafe {
             if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
-                println!("{}", fd);
-                println!("Errno: {}", *__errno_location());
                 return None;
             }
         }
