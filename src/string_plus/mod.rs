@@ -29,7 +29,7 @@ impl DecLine {
             DecLine::VerticalBar => '\x78',
             DecLine::HorizontalBar => '\x71',
         }
-        .to_string();
+        .into();
     }
 }
 
