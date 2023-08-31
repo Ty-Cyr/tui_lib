@@ -113,6 +113,18 @@ fn main() -> Result<(), String> {
                 tui_terminal.println(c.to_string());
             }
 
+            TuiKeys::Control(c) => {
+                tui_terminal.print(StringPlus::dec_line(DecLine::TopLeft));
+                tui_terminal.print(StringPlus::dec_line(DecLine::HorizontalBar));
+                tui_terminal.println(StringPlus::dec_line(DecLine::TopRight));
+                tui_terminal.print(StringPlus::dec_line(DecLine::VerticalBar));
+                tui_terminal.print(c);
+                tui_terminal.println(StringPlus::dec_line(DecLine::VerticalBar));
+                tui_terminal.print(StringPlus::dec_line(DecLine::BottomLeft));
+                tui_terminal.print(StringPlus::dec_line(DecLine::HorizontalBar));
+                tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
+            }
+
             TuiKeys::Other(c) => {
                 tui_terminal.println("Key: ".to_string() + &c.to_string());
                 tui_terminal.println("Key-U8: ".to_string() + &(c as u8).to_string());
