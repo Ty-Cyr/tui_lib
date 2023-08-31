@@ -17,17 +17,17 @@ pub enum DecLine {
 impl DecLine {
     fn get_code(&self) -> String {
         return match self {
-            DecLine::TopLeft => '\x6c',
-            DecLine::TopMiddle => '\x77',
-            DecLine::TopRight => '\x6b',
-            DecLine::MiddleLeft => '\x74',
-            DecLine::MiddleMiddle => '\x6e',
-            DecLine::MiddleRight => '\x75',
-            DecLine::BottomLeft => '\x6d',
-            DecLine::BottomMiddle => '\x76',
-            DecLine::BottomRight => '\x6a',
-            DecLine::VerticalBar => '\x78',
-            DecLine::HorizontalBar => '\x71',
+            &DecLine::TopLeft => '\x6c',
+            &DecLine::TopMiddle => '\x77',
+            &DecLine::TopRight => '\x6b',
+            &DecLine::MiddleLeft => '\x74',
+            &DecLine::MiddleMiddle => '\x6e',
+            &DecLine::MiddleRight => '\x75',
+            &DecLine::BottomLeft => '\x6d',
+            &DecLine::BottomMiddle => '\x76',
+            &DecLine::BottomRight => '\x6a',
+            &DecLine::VerticalBar => '\x78',
+            &DecLine::HorizontalBar => '\x71',
         }
         .into();
     }
@@ -134,6 +134,12 @@ impl From<&StringPlus> for String {
 impl ToString for StringPlus {
     fn to_string(&self) -> String {
         return self.into();
+    }
+}
+
+impl From<char> for StringPlus {
+    fn from(value: char) -> StringPlus {
+        return value.to_string().into();
     }
 }
 
