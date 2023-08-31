@@ -128,6 +128,8 @@ impl InputInterface {
             }
             _ => match input_char as u32 {
                 0x20..=0x7D => return TuiKeys::AsciiReadable(input_char),
+                0 => TuiKeys::Ignore,
+                1..=26 => return TuiKeys::Control((input_char as u8 + 0x40) as char),
                 _ => return TuiKeys::Other(input_char),
             },
         }
