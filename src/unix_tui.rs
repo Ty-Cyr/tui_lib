@@ -4,7 +4,6 @@ use libc::{
     winsize, F_GETFL, F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ,
 };
 
-use std::fs::OpenOptions;
 use std::io::{stdin, stdout, Stdout, Write};
 use std::os::unix::prelude::AsRawFd;
 
@@ -143,11 +142,6 @@ pub struct OutputInterface {
 
 impl OutputInterface {
     pub fn get_size(&self) -> Option<(u16, u16)> {
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open("/dev/tty")
-            .ok()?;
         let mut window_size: winsize = winsize {
             ws_row: 0,
             ws_col: 0,
@@ -159,7 +153,6 @@ impl OutputInterface {
                 return None;
             }
         }
-        _ = file.as_raw_fd();
         return Some((window_size.ws_col as u16, window_size.ws_row as u16));
     }
 }
