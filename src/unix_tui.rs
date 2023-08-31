@@ -126,12 +126,10 @@ impl InputInterface {
             '\t' => {
                 return TuiKeys::Tab;
             }
-            _ => {
-                if (input_char as u32) > 0x20 && (input_char as u32) < 0x7F {
-                    return TuiKeys::AsciiReadable(input_char);
-                }
-                return TuiKeys::Other(input_char);
-            }
+            _ => match input_char as u32 {
+                0x20..=0x7D => return TuiKeys::AsciiReadable(input_char),
+                _ => return TuiKeys::Other(input_char),
+            },
         }
     }
 }

@@ -75,7 +75,7 @@ fn main() -> Result<(), String> {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
             .ok_or("Failed To get Size")?;
-        tui_terminal.println(format!("{}, {}", a, b));
+        tui_terminal.println(format!("({}, {})", a, b));
         let event: TuiKeys = tui_terminal.get_keyboard_event();
         match event {
             TuiKeys::Enter => tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0))),
