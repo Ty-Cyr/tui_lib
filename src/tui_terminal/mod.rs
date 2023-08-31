@@ -1,9 +1,10 @@
-use std::io::Write;
+use std::io::{Read, Write};
 
 use crate::{
     os_tui::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
+    string_plus::{AsSp, StringPlusTrait},
     tui_enums::{CursorMode, TuiMode},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
@@ -272,10 +273,12 @@ impl TuiTerminal {
     fn alt_buffer(&mut self) {
         _ = self.output_interface.write("\x1b[?1049h".as_bytes());
         _ = self.output_interface.write("\x1b[0;0f".as_bytes());
+        _ = self.output_interface.flush();
     }
 
     fn main_buffer(&mut self) {
         _ = self.output_interface.write("\x1b[?1049l".as_bytes());
+        _ = self.output_interface.flush();
     }
 }
 
