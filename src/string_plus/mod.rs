@@ -1,5 +1,38 @@
 use crate::{Color, ThreeBool};
 
+pub enum DecLine {
+    TopLeft,
+    HorizontalBar,
+    TopMiddle,
+    TopRight,
+    VerticalBar,
+    MiddleLeft,
+    MiddleMiddle,
+    MiddleRight,
+    BottomLeft,
+    BottomMiddle,
+    BottomRight,
+}
+
+impl DecLine {
+    fn get_code(&self) -> String {
+        return match self {
+            DecLine::TopLeft => '\x6c',
+            DecLine::TopMiddle => '\x77',
+            DecLine::TopRight => '\x6b',
+            DecLine::MiddleLeft => '\x74',
+            DecLine::MiddleMiddle => '\x6e',
+            DecLine::MiddleRight => '\x75',
+            DecLine::BottomLeft => '\x6d',
+            DecLine::BottomMiddle => '\x76',
+            DecLine::BottomRight => '\x6a',
+            DecLine::VerticalBar => '\x78',
+            DecLine::HorizontalBar => '\x71',
+        }
+        .to_string();
+    }
+}
+
 #[derive(Clone)]
 pub struct StringPlus {
     string: String,
@@ -8,9 +41,21 @@ pub struct StringPlus {
     is_bold: ThreeBool,
     is_underlined: ThreeBool,
     is_inverted: ThreeBool,
+    is_dec_line: bool,
 }
 
 impl StringPlus {
+    pub fn dec_line(line: DecLine) -> StringPlus {
+        return StringPlus {
+            string: line.get_code(),
+            font_color: Color::Default,
+            background_color: Color::Default,
+            is_bold: ThreeBool::Default,
+            is_underlined: ThreeBool::Default,
+            is_inverted: ThreeBool::Default,
+            is_dec_line: true,
+        };
+    }
     pub fn get_font_color(&self) -> Color {
         return self.font_color;
     }
@@ -34,6 +79,10 @@ impl StringPlus {
 
     pub fn get_inverted(&self) -> ThreeBool {
         return self.is_inverted;
+    }
+
+    pub fn get_dec_line(&self) -> bool {
+        return self.is_dec_line;
     }
 }
 
@@ -97,6 +146,7 @@ impl From<&str> for StringPlus {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_dec_line: false,
         };
     }
 }
@@ -110,6 +160,7 @@ impl From<String> for StringPlus {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_dec_line: false,
         };
     }
 }

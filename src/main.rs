@@ -1,5 +1,5 @@
 use tui_lib::{
-    string_plus::StringPlusTrait,
+    string_plus::{DecLine, StringPlus, StringPlusTrait},
     tui_enums::ThreeBool,
     tui_enums::{Color, CursorMode, TuiMode},
     tui_keys::TuiKeys,
@@ -57,6 +57,19 @@ fn main() -> Result<(), String> {
             .set_font_color(Color::BrightBlack),
     );
     tui_terminal.println("Bright Black".set_background_color(Color::BrightBlack));
+
+    tui_terminal.print(StringPlus::dec_line(DecLine::TopLeft));
+    tui_terminal.print(StringPlus::dec_line(DecLine::TopMiddle));
+    tui_terminal.print(StringPlus::dec_line(DecLine::TopMiddle));
+    tui_terminal.println(StringPlus::dec_line(DecLine::TopRight));
+    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleLeft));
+    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleMiddle));
+    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleMiddle));
+    tui_terminal.println(StringPlus::dec_line(DecLine::MiddleRight));
+    tui_terminal.print(StringPlus::dec_line(DecLine::BottomLeft));
+    tui_terminal.print(StringPlus::dec_line(DecLine::BottomMiddle));
+    tui_terminal.print(StringPlus::dec_line(DecLine::BottomMiddle));
+    tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
 
     loop {
         let (a, b): (u16, u16) = tui_terminal

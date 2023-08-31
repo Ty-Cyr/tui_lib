@@ -169,6 +169,13 @@ impl TuiTerminal {
         }
     }
 
+    fn send_dec_line_code(&mut self, is_dec_line: bool) {
+        match is_dec_line {
+            true => _ = self.output_interface.write("\x1b(0".as_bytes()),
+            false => _ = self.output_interface.write("\x1b(B".as_bytes()),
+        }
+    }
+
     fn reset_font_settings(&mut self) {
         _ = self.output_interface.write("\x1b[m".as_bytes());
         self.send_font_color_code(self.font_color);
@@ -176,6 +183,7 @@ impl TuiTerminal {
         self.send_bold_code(self.is_bold);
         self.send_underlined_code(self.is_underlined);
         self.send_inverted_code(self.is_inverted);
+        self.send_dec_line_code(false);
         _ = self.output_interface.flush();
     }
 
@@ -212,6 +220,7 @@ impl TuiTerminal {
         self.send_bold_code(string_plus.get_bold());
         self.send_underlined_code(string_plus.get_underlined());
         self.send_inverted_code(string_plus.get_inverted());
+        self.send_dec_line_code(string_plus.get_dec_line());
     }
 
     pub fn println<T: Into<StringPlus>>(&mut self, string_plus: T) {
