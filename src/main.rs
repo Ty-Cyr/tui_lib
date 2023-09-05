@@ -77,7 +77,11 @@ fn main() -> Result<(), String> {
             .set_background_color(Color::CC256(41)),
     );
     tui_terminal.println("Italics".set_italics(ThreeBool::True));
-    tui_terminal.println(DecLine::Block.set_font_color(Color::Red));
+    tui_terminal.println(
+        DecLine::Block
+            .set_font_color(Color::Red)
+            .set_blinking(ThreeBool::True),
+    );
     tui_terminal.set_background_color(Color::RGB(50, 130, 0));
     tui_terminal.println("Hello World");
     tui_terminal.default_settings();
