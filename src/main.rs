@@ -9,6 +9,7 @@ use tui_lib::{
 fn main() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
+    tui_terminal.set_background_color(Color::Black);
     tui_terminal.set_cursor(CursorMode::Hidden);
     tui_terminal.println("White".set_font_color(Color::White));
     tui_terminal.println("White".set_background_color(Color::White));
