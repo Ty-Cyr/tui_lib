@@ -60,7 +60,7 @@ impl TuiTerminal {
             Color::Magenta => "35",
             Color::BrightMagenta => "95",
             Color::Cyan => "36",
-            Color::BrightCyan => "96u",
+            Color::BrightCyan => "96",
             Color::CC256(code) => {
                 ascii_code = "38;5;".to_string() + &code.to_string();
                 ascii_code.as_str()
@@ -213,6 +213,7 @@ impl TuiTerminal {
     pub fn set_background_color(&mut self, color: Color) {
         self.font_settings.background_color = color;
         self.send_font_settings(&self.font_settings.clone());
+        self.clear_end_line();
     }
 
     pub fn set_bold(&mut self, is_bold: ThreeBool) {
