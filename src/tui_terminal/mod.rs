@@ -282,7 +282,7 @@ impl TuiTerminal {
     }
 
     pub fn clear_screen(&mut self) {
-        _ = self.output_interface.write("\x1bc".as_bytes());
+        _ = self.output_interface.write("\x1b[2J".as_bytes());
         _ = self.output_interface.flush();
     }
 
@@ -311,7 +311,6 @@ impl TuiTerminal {
 
     fn alt_buffer(&mut self) {
         _ = self.output_interface.write("\x1b[?1049h".as_bytes());
-        _ = self.output_interface.write("\x1b[0;0f".as_bytes());
         _ = self.output_interface.flush();
     }
 
