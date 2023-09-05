@@ -243,6 +243,7 @@ impl TuiTerminal {
         for line in string.split("\n") {
             self.send_font_settings(string_plus.get_font_settings());
             _ = self.output_interface.write(line.as_bytes());
+            self.send_font_settings(&self.font_settings.clone());
             _ = self.output_interface.write("\n".as_bytes());
         }
         _ = self.output_interface.flush();
@@ -258,6 +259,7 @@ impl TuiTerminal {
                 _ = self.output_interface.write("\n".as_bytes());
             }
             _ = self.output_interface.write(line.as_bytes());
+            self.send_font_settings(&self.font_settings.clone());
             line_number += 1;
         }
         _ = self.output_interface.flush();
