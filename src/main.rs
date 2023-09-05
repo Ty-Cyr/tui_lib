@@ -86,12 +86,13 @@ fn main() -> Result<(), String> {
     tui_terminal.set_background_color(Color::RGB(50, 130, 0));
     tui_terminal.println("Hello World");
     tui_terminal.default_settings();
+    tui_terminal.set_background_color(Color::Black);
 
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
             .ok_or("Failed To get Size")?;
-        tui_terminal.println(format!("({}, {})", a, b));
+        tui_terminal.println(String::new() + "(" + &a.to_string() + &b.to_string() + ")");
         let event: TuiKeys = tui_terminal.get_keyboard_event();
         match event {
             TuiKeys::Enter => tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0))),
