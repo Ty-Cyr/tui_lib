@@ -42,4 +42,5 @@ pub enum CursorMode {
     StedayUnderline,
     BlinkingBar,
     SteadyBar,
+    Hidden,
 }

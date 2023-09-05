@@ -167,6 +167,7 @@ impl TuiTerminal {
     }
 
     fn send_cursor_code(&mut self) {
+        _ = self.output_interface.write("\x1b[?25h".as_bytes());
         match self.cursor_mode {
             CursorMode::BlinkingBlock => _ = self.output_interface.write("\x1b[1\x20q".as_bytes()),
             CursorMode::SteadyBlock => _ = self.output_interface.write("\x1b[2\x20q".as_bytes()),
@@ -178,8 +179,10 @@ impl TuiTerminal {
             }
             CursorMode::BlinkingBar => _ = self.output_interface.write("\x1b[5\x20q".as_bytes()),
             CursorMode::SteadyBar => _ = self.output_interface.write("\x1b[6\x20q".as_bytes()),
+            CursorMode::Hidden => _ = self.output_interface.write("\x1b[?25l".as_bytes()),
             CursorMode::Default => _ = self.output_interface.write("\x1b[0\x20q".as_bytes()),
         }
+        _ = self.output_interface.flush();
     }
 
     fn send_dec_line_code(&mut self, is_dec_line: bool) {
