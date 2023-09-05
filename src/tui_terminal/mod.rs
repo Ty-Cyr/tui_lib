@@ -139,6 +139,16 @@ impl TuiTerminal {
         };
     }
 
+    fn get_italics_code(&mut self, mut is_italics: ThreeBool) -> &str {
+        if let ThreeBool::Default = is_italics {
+            is_italics = self.font_settings.is_underlined;
+        }
+        return match is_italics {
+            ThreeBool::True => "3",
+            ThreeBool::False | ThreeBool::Default => "23",
+        };
+    }
+
     fn get_inverted_code(&mut self, mut is_inverted: ThreeBool) -> &str {
         if let ThreeBool::Default = is_inverted {
             is_inverted = self.font_settings.is_inverted;
@@ -197,6 +207,8 @@ impl TuiTerminal {
         code += ";";
         code += self.get_underlined_code(font_settings.is_underlined);
         code += ";";
+        code += self.get_italics_code(font_settings.is_italics);
+        code += ";";
         code += self.get_inverted_code(font_settings.is_inverted);
         code += ";";
         code += self.get_blinking_code(font_settings.is_blinking);
@@ -222,6 +234,10 @@ impl TuiTerminal {
 
     pub fn set_underlined(&mut self, is_underlined: ThreeBool) {
         self.font_settings.is_underlined = is_underlined;
+    }
+
+    pub fn set_italics(&mut self, is_italics: ThreeBool) {
+        self.font_settings.is_italics = is_italics;
     }
 
     pub fn set_inverted(&mut self, is_inverted: ThreeBool) {

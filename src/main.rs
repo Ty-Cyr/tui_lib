@@ -1,5 +1,5 @@
 use tui_lib::{
-    string_plus::{DecLine, StringPlus, StringPlusTrait},
+    string_plus::{DecLine, StringPlusTrait},
     tui_enums::ThreeBool,
     tui_enums::{Color, CursorMode, TuiMode},
     tui_keys::TuiKeys,
@@ -58,24 +58,26 @@ fn main() -> Result<(), String> {
     );
     tui_terminal.println("Bright Black".set_background_color(Color::BrightBlack));
 
-    tui_terminal.print(StringPlus::dec_line(DecLine::TopLeft));
-    tui_terminal.print(StringPlus::dec_line(DecLine::TopMiddle));
-    tui_terminal.print(StringPlus::dec_line(DecLine::TopMiddle));
-    tui_terminal.println(StringPlus::dec_line(DecLine::TopRight));
-    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleLeft));
-    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleMiddle));
-    tui_terminal.print(StringPlus::dec_line(DecLine::MiddleMiddle));
-    tui_terminal.println(StringPlus::dec_line(DecLine::MiddleRight));
-    tui_terminal.print(StringPlus::dec_line(DecLine::BottomLeft));
-    tui_terminal.print(StringPlus::dec_line(DecLine::BottomMiddle));
-    tui_terminal.print(StringPlus::dec_line(DecLine::BottomMiddle));
-    tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
+    tui_terminal.print(DecLine::TopLeft);
+    tui_terminal.print(DecLine::TopMiddle);
+    tui_terminal.print(DecLine::TopMiddle);
+    tui_terminal.println(DecLine::TopRight);
+    tui_terminal.print(DecLine::MiddleLeft);
+    tui_terminal.print(DecLine::MiddleMiddle);
+    tui_terminal.print(DecLine::MiddleMiddle);
+    tui_terminal.println(DecLine::MiddleRight);
+    tui_terminal.print(DecLine::BottomLeft);
+    tui_terminal.print(DecLine::BottomMiddle);
+    tui_terminal.print(DecLine::BottomMiddle);
+    tui_terminal.println(DecLine::BottomRight);
 
     tui_terminal.println(
         "blinking\nlines"
             .set_blinking(ThreeBool::True)
             .set_background_color(Color::CC256(41)),
     );
+    tui_terminal.println("Italics".set_italics(ThreeBool::True));
+    tui_terminal.println(DecLine::Block.set_font_color(Color::Red));
     tui_terminal.set_background_color(Color::RGB(50, 130, 0));
     tui_terminal.println("Hello World");
     tui_terminal.default_settings();
@@ -123,15 +125,15 @@ fn main() -> Result<(), String> {
             }
 
             TuiKeys::Control(c) => {
-                tui_terminal.print(StringPlus::dec_line(DecLine::TopLeft));
-                tui_terminal.print(StringPlus::dec_line(DecLine::HorizontalBar));
-                tui_terminal.println(StringPlus::dec_line(DecLine::TopRight));
-                tui_terminal.print(StringPlus::dec_line(DecLine::VerticalBar));
+                tui_terminal.print(DecLine::TopLeft);
+                tui_terminal.print(DecLine::HorizontalBar);
+                tui_terminal.println(DecLine::TopRight);
+                tui_terminal.print(DecLine::VerticalBar);
                 tui_terminal.print(c);
-                tui_terminal.println(StringPlus::dec_line(DecLine::VerticalBar));
-                tui_terminal.print(StringPlus::dec_line(DecLine::BottomLeft));
-                tui_terminal.print(StringPlus::dec_line(DecLine::HorizontalBar));
-                tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
+                tui_terminal.println(DecLine::VerticalBar);
+                tui_terminal.print(DecLine::BottomLeft);
+                tui_terminal.print(DecLine::HorizontalBar);
+                tui_terminal.println(DecLine::BottomRight);
             }
 
             TuiKeys::Other(c) => {

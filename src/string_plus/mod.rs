@@ -12,6 +12,8 @@ pub enum DecLine {
     BottomLeft,
     BottomMiddle,
     BottomRight,
+    Block,
+    Other(char),
 }
 
 impl DecLine {
@@ -28,6 +30,8 @@ impl DecLine {
             &DecLine::BottomRight => '\x6a',
             &DecLine::VerticalBar => '\x78',
             &DecLine::HorizontalBar => '\x71',
+            &DecLine::Block => '\x61',
+            &DecLine::Other(code) => code,
         }
         .into();
     }
@@ -40,14 +44,6 @@ pub struct StringPlus {
 }
 
 impl StringPlus {
-    pub fn dec_line(line: DecLine) -> StringPlus {
-        let mut font_settings: FontSettings = FontSettings::default();
-        font_settings.is_dec_line = true;
-        return StringPlus {
-            string: line.get_code(),
-            font_settings: font_settings,
-        };
-    }
     pub fn get_font_color(&self) -> Color {
         return self.font_settings.font_color;
     }
@@ -91,6 +87,7 @@ pub trait StringPlusTrait {
     fn set_background_color(self, color: Color) -> StringPlus;
     fn set_bold(self, is_bold: ThreeBool) -> StringPlus;
     fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus;
+    fn set_italics(self, is_blinking: ThreeBool) -> StringPlus;
     fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus;
     fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus;
 }
@@ -116,6 +113,12 @@ impl<T: Into<StringPlus>> StringPlusTrait for T {
     fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
         string_plus.font_settings.is_underlined = is_underlined;
+        return string_plus;
+    }
+
+    fn set_italics(self, is_italics: ThreeBool) -> StringPlus {
+        let mut string_plus: StringPlus = self.into();
+        string_plus.font_settings.is_italics = is_italics;
         return string_plus;
     }
 
@@ -164,6 +167,17 @@ impl From<String> for StringPlus {
         return StringPlus {
             string: value,
             font_settings: FontSettings::default(),
+        };
+    }
+}
+
+impl From<DecLine> for StringPlus {
+    fn from(dec_line: DecLine) -> StringPlus {
+        let mut font_settings: FontSettings = FontSettings::default();
+        font_settings.is_dec_line = true;
+        return StringPlus {
+            string: dec_line.get_code(),
+            font_settings: font_settings,
         };
     }
 }
