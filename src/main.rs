@@ -98,16 +98,14 @@ fn main() -> Result<(), String> {
         match event {
             TuiKeys::Enter => tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0))),
             TuiKeys::LeftArrow => {
-                tui_terminal.println("Left Arrow".set_font_color(Color::RGB(0, 0, 255)))
+                tui_terminal.println("Left Arrow".set_font_color(Color::BrightBlue))
             }
             TuiKeys::RightArrow => {
-                tui_terminal.println("Right Arrow".set_font_color(Color::RGB(0, 0, 255)))
+                tui_terminal.println("Right Arrow".set_font_color(Color::BrightBlue))
             }
-            TuiKeys::UpArrow => {
-                tui_terminal.println("Up Arrow".set_font_color(Color::RGB(0, 0, 255)))
-            }
+            TuiKeys::UpArrow => tui_terminal.println("Up Arrow".set_font_color(Color::BrightBlue)),
             TuiKeys::DownArrow => {
-                tui_terminal.println("Down Arrow".set_font_color(Color::RGB(0, 0, 255)))
+                tui_terminal.println("Down Arrow".set_font_color(Color::BrightBlue))
             }
             TuiKeys::Backspace => {
                 tui_terminal.println("BACKSPACE".set_font_color(Color::RGB(255, 255, 0)))
