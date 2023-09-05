@@ -72,6 +72,9 @@ fn main() -> Result<(), String> {
     tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
 
     tui_terminal.println("blinking".set_blinking(ThreeBool::True));
+    tui_terminal.set_background_color(Color::RGB(50, 130, 0));
+    tui_terminal.println("Hello World");
+    tui_terminal.default_settings();
 
     loop {
         let (a, b): (u16, u16) = tui_terminal

@@ -1,4 +1,4 @@
-use crate::{Color, ThreeBool};
+use crate::{font_settings::FontSettings, Color, ThreeBool};
 
 pub enum DecLine {
     TopLeft,
@@ -36,59 +36,53 @@ impl DecLine {
 #[derive(Clone)]
 pub struct StringPlus {
     string: String,
-    font_color: Color,
-    background_color: Color,
-    is_bold: ThreeBool,
-    is_underlined: ThreeBool,
-    is_inverted: ThreeBool,
-    is_blinking: ThreeBool,
-    is_dec_line: bool,
+    font_settings: FontSettings,
 }
 
 impl StringPlus {
     pub fn dec_line(line: DecLine) -> StringPlus {
+        let mut font_settings: FontSettings = FontSettings::default();
+        font_settings.is_dec_line = true;
         return StringPlus {
             string: line.get_code(),
-            font_color: Color::Default,
-            background_color: Color::Default,
-            is_bold: ThreeBool::Default,
-            is_underlined: ThreeBool::Default,
-            is_inverted: ThreeBool::Default,
-            is_blinking: ThreeBool::Default,
-            is_dec_line: true,
+            font_settings: font_settings,
         };
     }
     pub fn get_font_color(&self) -> Color {
-        return self.font_color;
+        return self.font_settings.font_color;
     }
 
     pub fn set_font_color(mut self, color: Color) -> StringPlus {
-        self.font_color = color;
+        self.font_settings.font_color = color;
         return self;
     }
 
     pub fn get_background_color(&self) -> Color {
-        return self.background_color;
+        return self.font_settings.background_color;
     }
 
     pub fn get_bold(&self) -> ThreeBool {
-        return self.is_bold;
+        return self.font_settings.is_bold;
     }
 
     pub fn get_underlined(&self) -> ThreeBool {
-        return self.is_underlined;
+        return self.font_settings.is_underlined;
     }
 
     pub fn get_inverted(&self) -> ThreeBool {
-        return self.is_inverted;
+        return self.font_settings.is_inverted;
     }
 
     pub fn get_blinking(&self) -> ThreeBool {
-        return self.is_blinking;
+        return self.font_settings.is_blinking;
+    }
+
+    pub fn get_font_settings(&self) -> &FontSettings {
+        return &self.font_settings;
     }
 
     pub fn get_dec_line(&self) -> bool {
-        return self.is_dec_line;
+        return self.font_settings.is_dec_line;
     }
 }
 
@@ -104,36 +98,36 @@ pub trait StringPlusTrait {
 impl<T: Into<StringPlus>> StringPlusTrait for T {
     fn set_font_color(self, color: Color) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.font_color = color;
+        string_plus.font_settings.font_color = color;
         return string_plus;
     }
     fn set_background_color(self, color: Color) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.background_color = color;
+        string_plus.font_settings.background_color = color;
         return string_plus;
     }
 
     fn set_bold(self, is_bold: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.is_bold = is_bold;
+        string_plus.font_settings.is_bold = is_bold;
         return string_plus;
     }
 
     fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.is_underlined = is_underlined;
+        string_plus.font_settings.is_underlined = is_underlined;
         return string_plus;
     }
 
     fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.is_inverted = is_inverted;
+        string_plus.font_settings.is_inverted = is_inverted;
         return string_plus;
     }
 
     fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
-        string_plus.is_blinking = is_blinking;
+        string_plus.font_settings.is_blinking = is_blinking;
         return string_plus;
     }
 }
@@ -160,13 +154,7 @@ impl From<&str> for StringPlus {
     fn from(value: &str) -> StringPlus {
         return StringPlus {
             string: value.to_string(),
-            font_color: Color::Default,
-            background_color: Color::Default,
-            is_bold: ThreeBool::Default,
-            is_underlined: ThreeBool::Default,
-            is_inverted: ThreeBool::Default,
-            is_blinking: ThreeBool::Default,
-            is_dec_line: false,
+            font_settings: FontSettings::default(),
         };
     }
 }
@@ -175,13 +163,7 @@ impl From<String> for StringPlus {
     fn from(value: String) -> Self {
         return StringPlus {
             string: value,
-            font_color: Color::Default,
-            background_color: Color::Default,
-            is_bold: ThreeBool::Default,
-            is_underlined: ThreeBool::Default,
-            is_inverted: ThreeBool::Default,
-            is_blinking: ThreeBool::Default,
-            is_dec_line: false,
+            font_settings: FontSettings::default(),
         };
     }
 }

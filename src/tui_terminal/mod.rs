@@ -1,6 +1,7 @@
 use std::io::Write;
 
 use crate::{
+    font_settings::FontSettings,
     os_tui::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
@@ -11,12 +12,7 @@ use crate::{
 
 #[allow(unused)]
 pub struct TuiTerminal {
-    font_color: Color,
-    background_color: Color,
-    is_bold: ThreeBool,
-    is_underlined: ThreeBool,
-    is_inverted: ThreeBool,
-    is_blinking: ThreeBool,
+    font_settings: FontSettings,
     cursor_mode: CursorMode,
     output_interface: OutputInterface,
     input_interface: InputInterface,
@@ -31,12 +27,7 @@ impl TuiTerminal {
             TerminalState,
         ) = setup_terminal()?;
         let mut tui_terminal = TuiTerminal {
-            font_color: Color::Default,
-            background_color: Color::Default,
-            is_bold: ThreeBool::Default,
-            is_underlined: ThreeBool::Default,
-            is_inverted: ThreeBool::Default,
-            is_blinking: ThreeBool::Default,
+            font_settings: FontSettings::default(),
             cursor_mode: CursorMode::Default,
             output_interface: output_interface,
             input_interface: input_interface,
@@ -48,122 +39,124 @@ impl TuiTerminal {
         }
         return Some(tui_terminal);
     }
-    fn send_font_color_code(&mut self, color: Color) {
-        match color {
-            Color::White => _ = self.output_interface.write("\x1b[37m".as_bytes()),
-            Color::BrightWhite => _ = self.output_interface.write("\x1b[97m".as_bytes()),
-            Color::Black => _ = self.output_interface.write("\x1b[30m".as_bytes()),
-            Color::BrightBlack => _ = self.output_interface.write("\x1b[90m".as_bytes()),
-            Color::Red => _ = self.output_interface.write("\x1b[31m".as_bytes()),
-            Color::BrightRed => _ = self.output_interface.write("\x1b[91m".as_bytes()),
-            Color::Green => _ = self.output_interface.write("\x1b[32m".as_bytes()),
-            Color::BrightGreen => _ = self.output_interface.write("\x1b[92m".as_bytes()),
-            Color::Blue => _ = self.output_interface.write("\x1b[34m".as_bytes()),
-            Color::BrightBlue => _ = self.output_interface.write("\x1b[94m".as_bytes()),
-            Color::Yellow => _ = self.output_interface.write("\x1b[33m".as_bytes()),
-            Color::BrightYellow => _ = self.output_interface.write("\x1b[93m".as_bytes()),
-            Color::Magenta => _ = self.output_interface.write("\x1b[35m".as_bytes()),
-            Color::BrightMagenta => _ = self.output_interface.write("\x1b[95m".as_bytes()),
-            Color::Cyan => _ = self.output_interface.write("\x1b[36m".as_bytes()),
-            Color::BrightCyan => _ = self.output_interface.write("\x1b[96m".as_bytes()),
+    fn get_font_color_code(&mut self, mut color: Color) -> String {
+        if let Color::Default = color {
+            color = self.font_settings.font_color;
+        }
+        let ascii_code: String;
+        return match color {
+            Color::White => "37",
+            Color::BrightWhite => "97",
+            Color::Black => "30",
+            Color::BrightBlack => "90",
+            Color::Red => "31",
+            Color::BrightRed => "91",
+            Color::Green => "32",
+            Color::BrightGreen => "92",
+            Color::Blue => "34",
+            Color::BrightBlue => "94",
+            Color::Yellow => "33",
+            Color::BrightYellow => "93",
+            Color::Magenta => "35",
+            Color::BrightMagenta => "95",
+            Color::Cyan => "36",
+            Color::BrightCyan => "96u",
             Color::CC256(code) => {
-                _ = self
-                    .output_interface
-                    .write(("\x1b[38;5;".to_owned() + &code.to_string() + "m").as_bytes());
+                ascii_code = "38;5;".to_string() + &code.to_string();
+                ascii_code.as_str()
             }
             Color::RGB(r, g, b) => {
-                let code: String = String::from("\x1b[38;2;")
+                ascii_code = "38;2;".to_string()
                     + &r.to_string()
                     + ";"
                     + &g.to_string()
                     + ";"
-                    + &b.to_string()
-                    + "m";
-                _ = self.output_interface.write(code.as_bytes());
+                    + &b.to_string();
+                ascii_code.as_str()
             }
-            Color::Default => {}
+            Color::Default => "39",
         }
+        .to_string();
     }
-    fn send_background_color_code(&mut self, color: Color) {
-        match color {
-            Color::White => _ = self.output_interface.write("\x1b[47m".as_bytes()),
-            Color::BrightWhite => _ = self.output_interface.write("\x1b[107m".as_bytes()),
-            Color::Black => _ = self.output_interface.write("\x1b[40m".as_bytes()),
-            Color::BrightBlack => _ = self.output_interface.write("\x1b[100m".as_bytes()),
-            Color::Red => _ = self.output_interface.write("\x1b[41m".as_bytes()),
-            Color::BrightRed => _ = self.output_interface.write("\x1b[101m".as_bytes()),
-            Color::Green => _ = self.output_interface.write("\x1b[42m".as_bytes()),
-            Color::BrightGreen => _ = self.output_interface.write("\x1b[102m".as_bytes()),
-            Color::Blue => _ = self.output_interface.write("\x1b[44m".as_bytes()),
-            Color::BrightBlue => _ = self.output_interface.write("\x1b[104m".as_bytes()),
-            Color::Yellow => _ = self.output_interface.write("\x1b[43m".as_bytes()),
-            Color::BrightYellow => _ = self.output_interface.write("\x1b[103m".as_bytes()),
-            Color::Magenta => _ = self.output_interface.write("\x1b[45m".as_bytes()),
-            Color::BrightMagenta => _ = self.output_interface.write("\x1b[105m".as_bytes()),
-            Color::Cyan => _ = self.output_interface.write("\x1b[46m".as_bytes()),
-            Color::BrightCyan => _ = self.output_interface.write("\x1b[106m".as_bytes()),
+
+    fn get_background_color_code(&mut self, mut color: Color) -> String {
+        if let Color::Default = color {
+            color = self.font_settings.background_color;
+        }
+        let ascii_code: String;
+        return match color {
+            Color::White => "47",
+            Color::BrightWhite => "107",
+            Color::Black => "40",
+            Color::BrightBlack => "100",
+            Color::Red => "41",
+            Color::BrightRed => "101",
+            Color::Green => "42",
+            Color::BrightGreen => "102",
+            Color::Blue => "44",
+            Color::BrightBlue => "104",
+            Color::Yellow => "43",
+            Color::BrightYellow => "103",
+            Color::Magenta => "45",
+            Color::BrightMagenta => "105",
+            Color::Cyan => "46",
+            Color::BrightCyan => "106",
             Color::CC256(code) => {
-                _ = self
-                    .output_interface
-                    .write(("\x1b[48;5;".to_owned() + &code.to_string() + "m").as_bytes());
+                ascii_code = "48;5;".to_string() + &code.to_string();
+                ascii_code.as_str()
             }
             Color::RGB(r, g, b) => {
-                let code: String = String::from("\x1b[48;2;")
+                ascii_code = "48;2;".to_string()
                     + &r.to_string()
                     + ";"
                     + &g.to_string()
                     + ";"
-                    + &b.to_string()
-                    + "m";
-                _ = self.output_interface.write(code.as_bytes());
+                    + &b.to_string();
+                ascii_code.as_str()
             }
-            Color::Default => {}
+            Color::Default => "49",
         }
-        _ = self.output_interface.write("\x1b[0K".as_bytes());
+        .to_string();
     }
 
-    fn send_bold_code(&mut self, is_bold: ThreeBool) {
-        match is_bold {
-            ThreeBool::True => _ = self.output_interface.write("\x1b[1m".as_bytes()),
-            ThreeBool::False => {}
-            ThreeBool::Default => match self.is_bold {
-                ThreeBool::True => _ = self.output_interface.write("\x1b[1m".as_bytes()),
-                _ => {}
-            },
+    fn get_bold_code(&mut self, mut is_bold: ThreeBool) -> &str {
+        if let ThreeBool::Default = is_bold {
+            is_bold = self.font_settings.is_bold;
         }
+        return match is_bold {
+            ThreeBool::True => "1",
+            ThreeBool::False | ThreeBool::Default => "22",
+        };
     }
 
-    fn send_underlined_code(&mut self, is_underlined: ThreeBool) {
-        match is_underlined {
-            ThreeBool::True => _ = self.output_interface.write("\x1b[4m".as_bytes()),
-            ThreeBool::False => {}
-            ThreeBool::Default => match self.is_underlined {
-                ThreeBool::True => _ = self.output_interface.write("\x1b[4m".as_bytes()),
-                _ => {}
-            },
+    fn get_underlined_code(&mut self, mut is_underlined: ThreeBool) -> &str {
+        if let ThreeBool::Default = is_underlined {
+            is_underlined = self.font_settings.is_underlined;
         }
+        return match is_underlined {
+            ThreeBool::True => "4",
+            ThreeBool::False | ThreeBool::Default => "24",
+        };
     }
 
-    fn send_inverted_code(&mut self, is_inverted: ThreeBool) {
-        match is_inverted {
-            ThreeBool::True => _ = self.output_interface.write("\x1b[7m".as_bytes()),
-            ThreeBool::False => {}
-            ThreeBool::Default => match self.is_inverted {
-                ThreeBool::True => _ = self.output_interface.write("\x1b[7m".as_bytes()),
-                _ => {}
-            },
+    fn get_inverted_code(&mut self, mut is_inverted: ThreeBool) -> &str {
+        if let ThreeBool::Default = is_inverted {
+            is_inverted = self.font_settings.is_inverted;
         }
+        return match is_inverted {
+            ThreeBool::True => "7",
+            ThreeBool::False | ThreeBool::Default => "27",
+        };
     }
 
-    fn send_blinking_code(&mut self, is_blinking: ThreeBool) {
-        match is_blinking {
-            ThreeBool::True => _ = self.output_interface.write("\x1b[5m".as_bytes()),
-            ThreeBool::False => {}
-            ThreeBool::Default => match self.is_blinking {
-                ThreeBool::True => _ = self.output_interface.write("\x1b[5m".as_bytes()),
-                _ => {}
-            },
+    fn get_blinking_code(&mut self, mut is_blinking: ThreeBool) -> &str {
+        if let ThreeBool::Default = is_blinking {
+            is_blinking = self.font_settings.is_blinking;
         }
+        return match is_blinking {
+            ThreeBool::True => "5",
+            ThreeBool::False | ThreeBool::Default => "25",
+        };
     }
 
     fn send_cursor_code(&mut self) {
@@ -192,41 +185,50 @@ impl TuiTerminal {
         }
     }
 
-    fn reset_font_settings(&mut self) {
-        _ = self.output_interface.write("\x1b[m".as_bytes());
-        self.send_font_color_code(self.font_color);
-        self.send_background_color_code(self.background_color);
-        self.send_bold_code(self.is_bold);
-        self.send_underlined_code(self.is_underlined);
-        self.send_inverted_code(self.is_inverted);
-        self.send_blinking_code(self.is_blinking);
-        self.send_dec_line_code(false);
+    fn send_font_settings(&mut self, font_settings: &FontSettings) {
+        let mut code: String = String::from("\x1b[");
+        code += self.get_font_color_code(font_settings.font_color).as_str();
+        code += ";";
+        code += self
+            .get_background_color_code(font_settings.background_color)
+            .as_str();
+        code += ";";
+        code += self.get_bold_code(font_settings.is_bold);
+        code += ";";
+        code += self.get_underlined_code(font_settings.is_underlined);
+        code += ";";
+        code += self.get_inverted_code(font_settings.is_inverted);
+        code += ";";
+        code += self.get_blinking_code(font_settings.is_blinking);
+        code += "m";
+        _ = self.output_interface.write(code.as_bytes());
+        self.send_dec_line_code(font_settings.is_dec_line);
         _ = self.output_interface.flush();
     }
 
     pub fn set_font_color(&mut self, color: Color) {
-        self.font_color = color;
-        self.reset_font_settings();
+        self.font_settings.font_color = color;
+        self.send_font_settings(&self.font_settings.clone());
     }
     pub fn set_background_color(&mut self, color: Color) {
-        self.background_color = color;
-        self.reset_font_settings();
+        self.font_settings.background_color = color;
+        self.send_font_settings(&self.font_settings.clone());
     }
 
     pub fn set_bold(&mut self, is_bold: ThreeBool) {
-        self.is_bold = is_bold;
+        self.font_settings.is_bold = is_bold;
     }
 
     pub fn set_underlined(&mut self, is_underlined: ThreeBool) {
-        self.is_underlined = is_underlined;
+        self.font_settings.is_underlined = is_underlined;
     }
 
     pub fn set_inverted(&mut self, is_inverted: ThreeBool) {
-        self.is_inverted = is_inverted;
+        self.font_settings.is_inverted = is_inverted;
     }
 
     pub fn set_blinking(&mut self, is_blinking: ThreeBool) {
-        self.is_blinking = is_blinking;
+        self.font_settings.is_blinking = is_blinking;
     }
 
     pub fn set_cursor(&mut self, cursor_mode: CursorMode) {
@@ -234,24 +236,12 @@ impl TuiTerminal {
         self.send_cursor_code();
     }
 
-    fn send_string_plus_codes(&mut self, string_plus: &StringPlus) {
-        self.reset_font_settings();
-        self.send_font_color_code(string_plus.get_font_color());
-        self.send_background_color_code(string_plus.get_background_color());
-        self.send_bold_code(string_plus.get_bold());
-        self.send_underlined_code(string_plus.get_underlined());
-        self.send_inverted_code(string_plus.get_inverted());
-        self.send_blinking_code(string_plus.get_blinking());
-        self.send_dec_line_code(string_plus.get_dec_line());
-    }
-
     pub fn println<T: Into<StringPlus>>(&mut self, string_plus: T) {
         let string_plus: StringPlus = string_plus.into();
         let string: String = (&string_plus).into();
         for line in string.split("\n") {
-            self.send_string_plus_codes(&string_plus);
+            self.send_font_settings(string_plus.get_font_settings());
             _ = self.output_interface.write(line.as_bytes());
-            self.reset_font_settings();
             _ = self.output_interface.write("\n".as_bytes());
         }
         _ = self.output_interface.flush();
@@ -262,12 +252,11 @@ impl TuiTerminal {
         let string: String = (&string_plus).into();
         let mut line_number: usize = 0;
         for line in string.split("\n") {
-            self.send_string_plus_codes(&string_plus);
+            self.send_font_settings(string_plus.get_font_settings());
             if line_number != 0 {
                 _ = self.output_interface.write("\n".as_bytes());
             }
             _ = self.output_interface.write(line.as_bytes());
-            self.reset_font_settings();
             line_number += 1;
         }
         _ = self.output_interface.flush();
@@ -278,8 +267,18 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn clear_line(&mut self) {
+    pub fn clear_end_line(&mut self) {
         _ = self.output_interface.write("\x1b[0K".as_bytes());
+        _ = self.output_interface.flush();
+    }
+
+    pub fn clear_beginning_line(&mut self) {
+        _ = self.output_interface.write("\x1b[1K".as_bytes());
+        _ = self.output_interface.flush();
+    }
+
+    pub fn clear_line(&mut self) {
+        _ = self.output_interface.write("\x1b[2K".as_bytes());
         _ = self.output_interface.flush();
     }
 
@@ -301,19 +300,19 @@ impl TuiTerminal {
         _ = self.output_interface.write("\x1b[?1049l".as_bytes());
         _ = self.output_interface.flush();
     }
+
+    pub fn default_settings(&mut self) {
+        self.font_settings = FontSettings::default();
+        self.send_font_settings(&FontSettings::default());
+        self.clear_end_line();
+    }
 }
 
 impl Drop for TuiTerminal {
     fn drop(&mut self) {
-        self.font_color = Color::Default;
-        self.background_color = Color::Default;
-        self.is_bold = ThreeBool::Default;
-        self.is_underlined = ThreeBool::Default;
-        self.is_inverted = ThreeBool::Default;
-        self.is_blinking = ThreeBool::Default;
         self.cursor_mode = CursorMode::Default;
         self.send_cursor_code();
-        self.reset_font_settings();
+        self.send_font_settings(&FontSettings::default());
         self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
     }
