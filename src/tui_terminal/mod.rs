@@ -204,6 +204,7 @@ impl TuiTerminal {
         _ = self.output_interface.write(code.as_bytes());
         self.send_dec_line_code(font_settings.is_dec_line);
         _ = self.output_interface.flush();
+        self.clear_end_line();
     }
 
     pub fn set_font_color(&mut self, color: Color) {
@@ -213,7 +214,6 @@ impl TuiTerminal {
     pub fn set_background_color(&mut self, color: Color) {
         self.font_settings.background_color = color;
         self.send_font_settings(&self.font_settings.clone());
-        self.clear_end_line();
     }
 
     pub fn set_bold(&mut self, is_bold: ThreeBool) {
@@ -305,7 +305,6 @@ impl TuiTerminal {
     pub fn default_settings(&mut self) {
         self.font_settings = FontSettings::default();
         self.send_font_settings(&FontSettings::default());
-        self.clear_end_line();
     }
 }
 
