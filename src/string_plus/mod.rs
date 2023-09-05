@@ -41,6 +41,7 @@ pub struct StringPlus {
     is_bold: ThreeBool,
     is_underlined: ThreeBool,
     is_inverted: ThreeBool,
+    is_blinking: ThreeBool,
     is_dec_line: bool,
 }
 
@@ -53,6 +54,7 @@ impl StringPlus {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_blinking: ThreeBool::Default,
             is_dec_line: true,
         };
     }
@@ -81,6 +83,10 @@ impl StringPlus {
         return self.is_inverted;
     }
 
+    pub fn get_blinking(&self) -> ThreeBool {
+        return self.is_blinking;
+    }
+
     pub fn get_dec_line(&self) -> bool {
         return self.is_dec_line;
     }
@@ -92,35 +98,42 @@ pub trait StringPlusTrait {
     fn set_bold(self, is_bold: ThreeBool) -> StringPlus;
     fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus;
     fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus;
+    fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus;
 }
 
 impl<T: Into<StringPlus>> StringPlusTrait for T {
     fn set_font_color(self, color: Color) -> StringPlus {
-        let mut string_plus = self.into();
+        let mut string_plus: StringPlus = self.into();
         string_plus.font_color = color;
         return string_plus;
     }
     fn set_background_color(self, color: Color) -> StringPlus {
-        let mut string_plus = self.into();
+        let mut string_plus: StringPlus = self.into();
         string_plus.background_color = color;
         return string_plus;
     }
 
     fn set_bold(self, is_bold: ThreeBool) -> StringPlus {
-        let mut string_plus = self.into();
+        let mut string_plus: StringPlus = self.into();
         string_plus.is_bold = is_bold;
         return string_plus;
     }
 
     fn set_underlined(self, is_underlined: ThreeBool) -> StringPlus {
-        let mut string_plus = self.into();
+        let mut string_plus: StringPlus = self.into();
         string_plus.is_underlined = is_underlined;
         return string_plus;
     }
 
     fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus {
-        let mut string_plus = self.into();
+        let mut string_plus: StringPlus = self.into();
         string_plus.is_inverted = is_inverted;
+        return string_plus;
+    }
+
+    fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus {
+        let mut string_plus: StringPlus = self.into();
+        string_plus.is_blinking = is_blinking;
         return string_plus;
     }
 }
@@ -152,6 +165,7 @@ impl From<&str> for StringPlus {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_blinking: ThreeBool::Default,
             is_dec_line: false,
         };
     }
@@ -166,6 +180,7 @@ impl From<String> for StringPlus {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_blinking: ThreeBool::Default,
             is_dec_line: false,
         };
     }

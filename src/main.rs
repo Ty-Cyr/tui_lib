@@ -71,6 +71,8 @@ fn main() -> Result<(), String> {
     tui_terminal.print(StringPlus::dec_line(DecLine::BottomMiddle));
     tui_terminal.println(StringPlus::dec_line(DecLine::BottomRight));
 
+    tui_terminal.println("blinking".set_blinking(ThreeBool::True));
+
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()

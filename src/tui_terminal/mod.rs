@@ -16,6 +16,7 @@ pub struct TuiTerminal {
     is_bold: ThreeBool,
     is_underlined: ThreeBool,
     is_inverted: ThreeBool,
+    is_blinking: ThreeBool,
     cursor_mode: CursorMode,
     output_interface: OutputInterface,
     input_interface: InputInterface,
@@ -35,6 +36,7 @@ impl TuiTerminal {
             is_bold: ThreeBool::Default,
             is_underlined: ThreeBool::Default,
             is_inverted: ThreeBool::Default,
+            is_blinking: ThreeBool::Default,
             cursor_mode: CursorMode::Default,
             output_interface: output_interface,
             input_interface: input_interface,
@@ -153,6 +155,17 @@ impl TuiTerminal {
         }
     }
 
+    fn send_blinking_code(&mut self, is_blinking: ThreeBool) {
+        match is_blinking {
+            ThreeBool::True => _ = self.output_interface.write("\x1b[5m".as_bytes()),
+            ThreeBool::False => {}
+            ThreeBool::Default => match self.is_blinking {
+                ThreeBool::True => _ = self.output_interface.write("\x1b[5m".as_bytes()),
+                _ => {}
+            },
+        }
+    }
+
     fn send_cursor_code(&mut self) {
         match self.cursor_mode {
             CursorMode::BlinkingBlock => _ = self.output_interface.write("\x1b[1\x20q".as_bytes()),
@@ -183,6 +196,7 @@ impl TuiTerminal {
         self.send_bold_code(self.is_bold);
         self.send_underlined_code(self.is_underlined);
         self.send_inverted_code(self.is_inverted);
+        self.send_blinking_code(self.is_blinking);
         self.send_dec_line_code(false);
         _ = self.output_interface.flush();
     }
@@ -208,6 +222,10 @@ impl TuiTerminal {
         self.is_inverted = is_inverted;
     }
 
+    pub fn set_blinking(&mut self, is_blinking: ThreeBool) {
+        self.is_blinking = is_blinking;
+    }
+
     pub fn set_cursor(&mut self, cursor_mode: CursorMode) {
         self.cursor_mode = cursor_mode;
         self.send_cursor_code();
@@ -220,6 +238,7 @@ impl TuiTerminal {
         self.send_bold_code(string_plus.get_bold());
         self.send_underlined_code(string_plus.get_underlined());
         self.send_inverted_code(string_plus.get_inverted());
+        self.send_blinking_code(string_plus.get_blinking());
         self.send_dec_line_code(string_plus.get_dec_line());
     }
 
@@ -288,6 +307,7 @@ impl Drop for TuiTerminal {
         self.is_bold = ThreeBool::Default;
         self.is_underlined = ThreeBool::Default;
         self.is_inverted = ThreeBool::Default;
+        self.is_blinking = ThreeBool::Default;
         self.cursor_mode = CursorMode::Default;
         self.send_cursor_code();
         self.reset_font_settings();
