@@ -5,7 +5,7 @@ use crate::{
     os_tui::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
-    tui_enums::{CursorMode, TuiMode},
+    tui_enums::{CursorMode, CursorNav, TuiMode},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
@@ -167,6 +167,69 @@ impl TuiTerminal {
             ThreeBool::True => "5",
             ThreeBool::False | ThreeBool::Default => "25",
         };
+    }
+
+    pub fn shift_cursor(&mut self, cursor_nav: CursorNav) {
+        _ = self
+            .output_interface
+            .write(cursor_nav.get_code().as_bytes());
+    }
+
+    pub fn set_cursor_position(&mut self, x: u16, y: u16) {
+        _ = self
+            .output_interface
+            .write(("\x1b[".to_string() + &y.to_string() + ";" + &x.to_string() + "H").as_bytes());
+    }
+
+    pub fn get_cursor_position(&mut self) -> Option<(u16, u16)> {
+        _ = self.output_interface.write("\x1b[6n".as_bytes());
+        _ = self.output_interface.flush();
+
+        self.get_keyboard_event().eq_or_none(&TuiKeys::Escape)?;
+
+        self.get_keyboard_event()
+            .eq_or_none(&TuiKeys::AsciiReadable('['))?;
+
+        let mut y: u16 = 0;
+        loop {
+            let value: TuiKeys = self.get_keyboard_event();
+            if let Some(digit) = value.get_digit() {
+                if y > u16::MAX / 10 {
+                    return None;
+                }
+                y *= 10;
+                if (u16::MAX - y) < digit as u16 {
+                    return None;
+                }
+                y += digit as u16;
+                continue;
+            } else if y == 0 {
+                return None;
+            }
+            value.eq_or_none(&TuiKeys::AsciiReadable(';'))?;
+            break;
+        }
+
+        let mut x: u16 = 0;
+        loop {
+            let value: TuiKeys = self.get_keyboard_event();
+            if let Some(digit) = value.get_digit() {
+                if x > u16::MAX / 10 {
+                    return None;
+                }
+                x *= 10;
+                if (u16::MAX - x) < digit as u16 {
+                    return None;
+                }
+                x += digit as u16;
+                continue;
+            } else if x == 0 {
+                return None;
+            }
+            value.eq_or_none(&TuiKeys::AsciiReadable('R'))?;
+            break;
+        }
+        return Some((y, x));
     }
 
     fn send_cursor_code(&mut self) {

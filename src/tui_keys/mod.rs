@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum TuiKeys {
     Enter,
     LeftArrow,
@@ -15,4 +15,23 @@ pub enum TuiKeys {
     Other(char),
     Ignore,
     Error,
+}
+
+impl TuiKeys {
+    pub fn eq_or_none(&self, expected: &TuiKeys) -> Option<()> {
+        if self == expected {
+            return Some(());
+        } else {
+            return None;
+        }
+    }
+    pub fn get_digit(&self) -> Option<u8> {
+        if let TuiKeys::AsciiReadable(value) = self {
+            match value.clone() as u8 {
+                0x30..=0x39 => return Some((value.clone() as u8) - 0x30),
+                _ => return None,
+            }
+        }
+        return None;
+    }
 }

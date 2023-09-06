@@ -180,6 +180,7 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
                         0x20..=0x7D => return TuiKeys::AsciiReadable(character),
                         0 => return TuiKeys::Ignore,
                         1..=26 => return TuiKeys::Control((character as u8 + 0x40) as char),
+                        0x1b => return TuiKeys::Escape,
                         _ => return TuiKeys::Other(character),
                     }
                 } else {

@@ -8,7 +8,7 @@ use tui_lib::{
 
 fn main() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
-        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
+        TuiTerminal::new(TuiMode::Standard).ok_or("Failed To Setup Terminal".to_string())?;
     tui_terminal.set_background_color(Color::Black);
     tui_terminal.clear_screen();
     tui_terminal.set_cursor(CursorMode::Hidden);
@@ -88,7 +88,11 @@ fn main() -> Result<(), String> {
     tui_terminal.println("Hello World");
     tui_terminal.default_settings();
     tui_terminal.set_background_color(Color::Black);
+    let (x, y) = tui_terminal
+        .get_cursor_position()
+        .ok_or("Failed To Get Cursor Position")?;
 
+    tui_terminal.println(String::new() + "(" + &x.to_string() + ", " + &y.to_string() + ")");
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
