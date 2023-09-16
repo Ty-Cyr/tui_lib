@@ -1,7 +1,8 @@
 use std::io::{stdout, Stdout, Write};
 
 use crate::{
-    input_interface::InputInterfaceT, output_interface::OutputInterfaceT, tui_keys::TuiKeys,
+    tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
+    tui_keys::TuiKeys,
 };
 use windows::Win32::{
     Foundation::HANDLE,

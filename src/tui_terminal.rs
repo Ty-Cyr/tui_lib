@@ -2,12 +2,11 @@ use std::io::Write;
 
 use crate::{
     font_settings::FontSettings,
-    input_interface::InputInterfaceT,
-    os_tui::{
+    tui_enums::{CursorMode, CursorNav, TuiMode},
+    tui_io::windows_tui_io::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
-    output_interface::OutputInterfaceT,
-    tui_enums::{CursorMode, CursorNav, TuiMode},
+    tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
