@@ -7,6 +7,9 @@ use libc::{
 use std::io::{stdin, stdout, Stdout, Write};
 use std::os::unix::prelude::AsRawFd;
 
+use super::input_interface::InputInterfaceT;
+use super::output_interface::OutputInterfaceT;
+
 #[derive(Clone, Copy)]
 pub struct TerminalState {
     termios_struct: termios,
@@ -18,10 +21,6 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    pub fn new() -> InputInterface {
-        let input_fd: i32 = stdin().as_raw_fd();
-        return InputInterface { input_fd: input_fd };
-    }
     pub fn get_input_mode(&self) -> Option<termios> {
         let mut termios_struct: termios = new_termios();
         unsafe {
@@ -107,8 +106,15 @@ impl InputInterface {
             }
         }
     }
+}
 
-    pub fn get_keyboard_event(&self) -> TuiKeys {
+impl InputInterfaceT for InputInterface {
+    fn new() -> Option<InputInterface> {
+        let input_fd: i32 = stdin().as_raw_fd();
+        return Some(InputInterface { input_fd: input_fd });
+    }
+
+    fn read_keyboard(&self) -> TuiKeys {
         let input_char: char = self.read_char();
         match input_char {
             '\x1b' => {
@@ -134,14 +140,18 @@ impl InputInterface {
             },
         }
     }
+
+    fn read_raw(&self) -> Option<char> {
+        return Some(self.read_char());
+    }
 }
 
 pub struct OutputInterface {
     output_handle: Stdout,
 }
 
-impl OutputInterface {
-    pub fn get_size(&self) -> Option<(u16, u16)> {
+impl OutputInterfaceT for OutputInterface {
+    fn get_size(&self) -> Option<(u16, u16)> {
         let mut window_size: winsize = winsize {
             ws_row: 0,
             ws_col: 0,
@@ -168,7 +178,7 @@ impl Write for OutputInterface {
 }
 
 pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
-    let input_interface: InputInterface = InputInterface::new();
+    let input_interface: InputInterface = InputInterface::new()?;
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
