@@ -1,6 +1,8 @@
 use std::io::{stdout, Stdout, Write};
 
-use crate::tui_keys::TuiKeys;
+use crate::{
+    input_interface::InputInterfaceT, output_interface::OutputInterfaceT, tui_keys::TuiKeys,
+};
 use windows::Win32::{
     Foundation::HANDLE,
     System::Console::{
@@ -26,14 +28,6 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    fn new() -> Option<InputInterface> {
-        let input_interface;
-        unsafe {
-            let input_handle: HANDLE = GetStdHandle(STD_INPUT_HANDLE).ok()?;
-            input_interface = InputInterface { input_handle };
-        }
-        return Some(input_interface);
-    }
     fn get_console_mode(&self) -> Option<CONSOLE_MODE> {
         let mut console_mode: CONSOLE_MODE = Default::default();
         unsafe {
@@ -52,8 +46,19 @@ impl InputInterface {
         _ = self.get_console_mode();
         return Some(());
     }
+}
 
-    pub fn get_keyboard_event(&self) -> TuiKeys {
+impl InputInterfaceT for InputInterface {
+    fn new() -> Option<InputInterface> {
+        let input_interface;
+        unsafe {
+            let input_handle: HANDLE = GetStdHandle(STD_INPUT_HANDLE).ok()?;
+            input_interface = InputInterface { input_handle };
+        }
+        return Some(input_interface);
+    }
+
+    fn read_keyboard(&self) -> TuiKeys {
         loop {
             let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
             let mut event_count: u32 = 0;
@@ -78,18 +83,47 @@ impl InputInterface {
                         continue;
                     }
                 }
-                _ => return TuiKeys::Error,
+                _ => continue,
+            }
+        }
+    }
+
+    fn read_raw(&self) -> Option<char> {
+        loop {
+            let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
+            let mut event_count: u32 = 0;
+            unsafe {
+                if !ReadConsoleInputW(self.input_handle.clone(), lpbuffer, &mut event_count)
+                    .as_bool()
+                {
+                    return None;
+                }
+            }
+            match lpbuffer[0].EventType as u32 {
+                KEY_EVENT => {
+                    let key_event_data: KEY_EVENT_RECORD;
+                    unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
+                    if key_event_data.bKeyDown.as_bool() {
+                        let result: char;
+                        unsafe {
+                            result = key_event_data.uChar.AsciiChar.try_into().ok()?;
+                        }
+                        return Some(result);
+                    } else {
+                        continue;
+                    }
+                }
+                _ => continue,
             }
         }
     }
 }
-
 pub struct OutputInterface {
     output_handle: Stdout,
 }
 
-impl OutputInterface {
-    pub fn get_size(&self) -> Option<(u16, u16)> {
+impl OutputInterfaceT for OutputInterface {
+    fn get_size(&self) -> Option<(u16, u16)> {
         let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
         unsafe {
             let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;

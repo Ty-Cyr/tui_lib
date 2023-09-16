@@ -92,12 +92,14 @@ fn main() -> Result<(), String> {
         .get_cursor_position()
         .ok_or("Failed To Get Cursor Position")?;
 
-    tui_terminal.println(String::new() + "(" + &x.to_string() + ", " + &y.to_string() + ")");
+    tui_terminal
+        .println(String::new() + "Position:  (" + &x.to_string() + ", " + &y.to_string() + ")");
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
             .ok_or("Failed To get Size")?;
-        tui_terminal.println(String::new() + "(" + &a.to_string() + ", " + &b.to_string() + ")");
+        tui_terminal
+            .println(String::new() + "Size: (" + &a.to_string() + ", " + &b.to_string() + ")");
         let event: TuiKeys = tui_terminal.get_keyboard_event();
         match event {
             TuiKeys::Enter => tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0))),

@@ -13,3 +13,6 @@ mod font_settings;
 pub mod tui_keys;
 
 pub mod tui_terminal;
+
+mod input_interface;
+mod output_interface;

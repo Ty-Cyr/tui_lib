@@ -2,9 +2,11 @@ use std::io::Write;
 
 use crate::{
     font_settings::FontSettings,
+    input_interface::InputInterfaceT,
     os_tui::{
         reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
     },
+    output_interface::OutputInterfaceT,
     tui_enums::{CursorMode, CursorNav, TuiMode},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
@@ -184,52 +186,49 @@ impl TuiTerminal {
     pub fn get_cursor_position(&mut self) -> Option<(u16, u16)> {
         _ = self.output_interface.write("\x1b[6n".as_bytes());
         _ = self.output_interface.flush();
-
-        self.get_keyboard_event().eq_or_none(&TuiKeys::Escape)?;
-
-        self.get_keyboard_event()
-            .eq_or_none(&TuiKeys::AsciiReadable('['))?;
-
+        if self.input_interface.read_raw()? != '\x1b' {
+            return None;
+        }
+        if self.input_interface.read_raw()? != '[' {
+            return None;
+        }
+        let mut x: u16 = 0;
         let mut y: u16 = 0;
         loop {
-            let value: TuiKeys = self.get_keyboard_event();
-            if let Some(digit) = value.get_digit() {
-                if y > u16::MAX / 10 {
-                    return None;
+            let input = self.input_interface.read_raw()?;
+            match input as u8 {
+                0x30..=0x39 => {
+                    if u16::MAX / 10 < x {
+                        return None;
+                    }
+                    x *= 10;
+                    if u16::MAX - x < (input as u16) {
+                        return None;
+                    }
+                    x += input as u16;
                 }
-                y *= 10;
-                if (u16::MAX - y) < digit as u16 {
-                    return None;
-                }
-                y += digit as u16;
-                continue;
-            } else if y == 0 {
-                return None;
+                0x3B => break,
+                _ => return None,
             }
-            value.eq_or_none(&TuiKeys::AsciiReadable(';'))?;
-            break;
         }
-
-        let mut x: u16 = 0;
         loop {
-            let value: TuiKeys = self.get_keyboard_event();
-            if let Some(digit) = value.get_digit() {
-                if x > u16::MAX / 10 {
-                    return None;
+            let input = self.input_interface.read_raw()?;
+            match input as u8 {
+                0x30..=0x39 => {
+                    if u16::MAX / 10 < y {
+                        return None;
+                    }
+                    y *= 10;
+                    if u16::MAX - y < (input as u16) {
+                        return None;
+                    }
+                    y += input as u16;
                 }
-                x *= 10;
-                if (u16::MAX - x) < digit as u16 {
-                    return None;
-                }
-                x += digit as u16;
-                continue;
-            } else if x == 0 {
-                return None;
+                0x52 => break,
+                _ => return None,
             }
-            value.eq_or_none(&TuiKeys::AsciiReadable('R'))?;
-            break;
         }
-        return Some((y, x));
+        return Some((x, y));
     }
 
     fn send_cursor_code(&mut self) {
@@ -369,7 +368,7 @@ impl TuiTerminal {
     }
 
     pub fn get_keyboard_event(&self) -> TuiKeys {
-        return self.input_interface.get_keyboard_event();
+        return self.input_interface.read_keyboard();
     }
 
     fn alt_buffer(&mut self) {
