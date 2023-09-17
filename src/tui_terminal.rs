@@ -193,26 +193,8 @@ impl TuiTerminal {
         if self.input_interface.read_raw()? != '[' {
             return None;
         }
-        let mut x: u16 = 0;
         let mut y: u16 = 0;
-        loop {
-            let input = self.input_interface.read_raw()?;
-            match input as u8 {
-                0x30..=0x39 => {
-                    let digit = (input as u16) - 0x30;
-                    if u16::MAX / 10 < x {
-                        return None;
-                    }
-                    x *= 10;
-                    if u16::MAX - x < digit {
-                        return None;
-                    }
-                    x += digit;
-                }
-                0x3B => break,
-                _ => return None,
-            }
-        }
+        let mut x: u16 = 0;
         loop {
             let input = self.input_interface.read_raw()?;
             match input as u8 {
@@ -227,11 +209,29 @@ impl TuiTerminal {
                     }
                     y += digit;
                 }
+                0x3B => break,
+                _ => return None,
+            }
+        }
+        loop {
+            let input = self.input_interface.read_raw()?;
+            match input as u8 {
+                0x30..=0x39 => {
+                    let digit = (input as u16) - 0x30;
+                    if u16::MAX / 10 < x {
+                        return None;
+                    }
+                    x *= 10;
+                    if u16::MAX - x < digit {
+                        return None;
+                    }
+                    x += digit;
+                }
                 0x52 => break,
                 _ => return None,
             }
         }
-        return Some((x, y));
+        return Some((y, x));
     }
 
     fn send_cursor_code(&mut self) {
