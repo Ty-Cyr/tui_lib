@@ -165,12 +165,17 @@ fn _feature_sample() -> Result<(), String> {
 fn _draw_test() -> Result<(), String> {
     let mut tui_terminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Get Tui Terminal")?;
-    tui_terminal.set_cursor_position(41, 1);
-    let (x, y) = tui_terminal
-        .get_cursor_position()
-        .ok_or("Failed To Get Cursor Position")?;
-    tui_terminal.println(format!("X: {}", x));
-    tui_terminal.println(format!("Y: {}", y));
+    tui_terminal.set_cursor_position(1, 1);
+    let (width, height) = tui_terminal
+        .get_teminal_size()
+        .ok_or("Failed To Get Terminal Size")?;
+    tui_terminal.set_cursor(CursorMode::Hidden);
+    tui_terminal.set_cursor_position(width / 2, height / 2);
+    tui_terminal.print(
+        DecLine::MiddleMiddle
+            .set_blinking(ThreeBool::True)
+            .set_font_color(Color::Magenta),
+    );
     loop {
         let event = tui_terminal.get_keyboard_event();
         match event {
