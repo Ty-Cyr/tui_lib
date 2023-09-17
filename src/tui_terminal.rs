@@ -199,14 +199,15 @@ impl TuiTerminal {
             let input = self.input_interface.read_raw()?;
             match input as u8 {
                 0x30..=0x39 => {
+                    let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < x {
                         return None;
                     }
                     x *= 10;
-                    if u16::MAX - x < (input as u16) {
+                    if u16::MAX - x < digit {
                         return None;
                     }
-                    x += input as u16;
+                    x += digit;
                 }
                 0x3B => break,
                 _ => return None,
@@ -216,14 +217,15 @@ impl TuiTerminal {
             let input = self.input_interface.read_raw()?;
             match input as u8 {
                 0x30..=0x39 => {
+                    let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < y {
                         return None;
                     }
                     y *= 10;
-                    if u16::MAX - y < (input as u16) {
+                    if u16::MAX - y < digit {
                         return None;
                     }
-                    y += input as u16;
+                    y += digit;
                 }
                 0x52 => break,
                 _ => return None,
