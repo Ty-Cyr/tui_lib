@@ -174,12 +174,14 @@ impl TuiTerminal {
         _ = self
             .output_interface
             .write(cursor_nav.get_code().as_bytes());
+        _ = self.output_interface.flush();
     }
 
     pub fn set_cursor_position(&mut self, x: u16, y: u16) {
         _ = self
             .output_interface
             .write(("\x1b[".to_string() + &y.to_string() + ";" + &x.to_string() + "H").as_bytes());
+        _ = self.output_interface.flush();
     }
 
     pub fn get_cursor_position(&mut self) -> Option<(u16, u16)> {

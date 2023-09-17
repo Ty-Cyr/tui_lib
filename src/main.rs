@@ -6,7 +6,7 @@ use tui_lib::{
     tui_terminal::TuiTerminal,
 };
 
-fn main() -> Result<(), String> {
+fn _feature_sample() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
     tui_terminal.set_background_color(Color::Black);
@@ -160,4 +160,31 @@ fn main() -> Result<(), String> {
             }
         }
     }
+}
+
+fn _draw_test() -> Result<(), String> {
+    let mut tui_terminal =
+        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Get Tui Terminal")?;
+    tui_terminal.set_cursor_position(1, 1);
+    let (x, y) = tui_terminal
+        .get_cursor_position()
+        .ok_or("Failed To Get Cursor Position")?;
+    tui_terminal.println(format!("X: {}", x));
+    tui_terminal.println(format!("Y: {}", y));
+    loop {
+        let event = tui_terminal.get_keyboard_event();
+        match event {
+            TuiKeys::Control(ch) => {
+                if ch == 'C' || ch == 'c' {
+                    break;
+                }
+            }
+            _ => continue,
+        }
+    }
+    return Ok(());
+}
+
+fn main() -> Result<(), String> {
+    return _draw_test();
 }
