@@ -231,7 +231,7 @@ impl TuiTerminal {
                 _ => return None,
             }
         }
-        return Some((y, x));
+        return Some((x, y));
     }
 
     fn send_cursor_code(&mut self) {
