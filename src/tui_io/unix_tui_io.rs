@@ -77,12 +77,8 @@ impl InputInterface {
         let input_char_option: Option<char> = self.try_read_char();
         match input_char_option {
             None => return TuiKeys::Escape,
-            Some(input_char) => match input_char {
-                '[' => return self.handle_escape_input_s2(),
-                _ => {
-                    return TuiKeys::Error;
-                }
-            },
+            Some('[') => return self.handle_escape_input_s2(),
+            Some(_) => return TuiKeys::Error,
         };
     }
 
@@ -94,10 +90,8 @@ impl InputInterface {
             'C' => return TuiKeys::RightArrow,
             'D' => return TuiKeys::LeftArrow,
             '3' => {
-                if let Some(input_char) = self.try_read_char() {
-                    if input_char == '~' {
-                        return TuiKeys::Delete;
-                    }
+                if let Some('~') = self.try_read_char() {
+                    return TuiKeys::Delete;
                 }
                 return TuiKeys::Error;
             }

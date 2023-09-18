@@ -179,13 +179,15 @@ fn _draw_test() -> Result<(), String> {
     loop {
         let event = tui_terminal.get_keyboard_event();
         match event {
-            TuiKeys::Control('C') | TuiKeys::Control('c') => break,
+            TuiKeys::Control('C') | TuiKeys::Control('c') | TuiKeys::Escape => break,
             _ => continue,
         }
     }
     return Ok(());
 }
 
+#[allow(unreachable_code)]
 fn main() -> Result<(), String> {
-    return _draw_test();
+    // return _draw_test();
+    return _feature_sample();
 }
