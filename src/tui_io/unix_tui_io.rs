@@ -1,7 +1,9 @@
 use crate::tui_keys::TuiKeys;
-use libc::{
-    c_char, c_void, cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr, tcsetattr, termios,
-    winsize, F_GETFL, F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ,
+use std::ffi::{c_char, c_void};
+
+use super::ffi::{
+    cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr, tcsetattr, Termios, Winsize, F_GETFL,
+    F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ,
 };
 
 use std::io::{stdin, stdout, Stdout, Write};
@@ -12,7 +14,7 @@ use super::output_interface::OutputInterfaceT;
 
 #[derive(Clone, Copy)]
 pub struct TerminalState {
-    termios_struct: termios,
+    termios_struct: Termios,
 }
 
 #[derive(Clone, Copy)]
@@ -21,8 +23,8 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    pub fn get_input_mode(&self) -> Option<termios> {
-        let mut termios_struct: termios = new_termios();
+    pub fn get_input_mode(&self) -> Option<Termios> {
+        let mut termios_struct: Termios = new_termios();
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
                 return None;
@@ -30,14 +32,14 @@ impl InputInterface {
         }
         return Some(termios_struct);
     }
-    pub fn set_input_mode(&self, mut termios_struct: termios) {
+    pub fn set_input_mode(&self, mut termios_struct: Termios) {
         unsafe {
             tcsetattr(self.input_fd, TCSADRAIN, &mut termios_struct);
         }
     }
 
-    pub fn get_raw_termios_struct(&self) -> termios {
-        let mut termios_struct: termios = new_termios();
+    pub fn get_raw_termios_struct(&self) -> Termios {
+        let mut termios_struct: Termios = new_termios();
         unsafe {
             cfmakeraw(&mut termios_struct);
             termios_struct.c_oflag |= ONLCR | OPOST;
@@ -146,7 +148,7 @@ pub struct OutputInterface {
 
 impl OutputInterfaceT for OutputInterface {
     fn get_size(&self) -> Option<(u16, u16)> {
-        let mut window_size: winsize = winsize {
+        let mut window_size: Winsize = Winsize {
             ws_row: 0,
             ws_col: 0,
             ws_xpixel: 0,
@@ -189,8 +191,8 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn new_termios() -> termios {
-    let termios_struct: termios = termios {
+pub fn new_termios() -> Termios {
+    let termios_struct: Termios = Termios {
         c_iflag: 0,
         c_oflag: 0,
         c_cflag: 0,
@@ -203,8 +205,8 @@ pub fn new_termios() -> termios {
     return termios_struct;
 }
 #[cfg(target_os = "macos")]
-pub fn new_termios() -> termios {
-    let termios_struct: termios = termios {
+pub fn new_termios() -> Termios {
+    let termios_struct: Termios = Termios {
         c_iflag: 0,
         c_oflag: 0,
         c_cflag: 0,
