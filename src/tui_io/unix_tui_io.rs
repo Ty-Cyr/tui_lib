@@ -1,13 +1,16 @@
 use crate::tui_keys::TuiKeys;
 use std::ffi::{c_char, c_void};
 
-use super::ffi::{
-    cfmakeraw, fcntl, ioctl, read as c_read, tcgetattr, tcsetattr, Termios, Winsize, F_GETFL,
-    F_SETFL, ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ,
-};
+mod unix;
+use unix::constants::{F_GETFL, F_SETFL};
+use unix::functions::{cfmakeraw, read as c_read};
 
 use std::io::{stdin, stdout, Stdout, Write};
 use std::os::unix::prelude::AsRawFd;
+
+use self::unix::constants::{ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ};
+use self::unix::functions::{fcntl, ioctl, tcgetattr, tcsetattr};
+use self::unix::structs::{Termios, Winsize};
 
 use super::input_interface::InputInterfaceT;
 use super::output_interface::OutputInterfaceT;
