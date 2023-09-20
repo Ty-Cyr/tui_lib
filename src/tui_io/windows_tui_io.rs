@@ -1,16 +1,22 @@
 use std::io::{stdout, Stdout, Write};
 
+mod windows;
+
 use crate::{
     tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
     tui_keys::TuiKeys,
 };
 
-use super::ffi::{
-    get_std_handle, virtual_keys, GetConsoleMode, GetConsoleScreenBufferInfo, ReadConsoleInputW,
-    SetConsoleMode, CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_MOUSE_INPUT,
-    ENABLE_WINDOW_INPUT, HANDLE, KEY_EVENT, KEY_EVENT_RECORD, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
+use windows::constants::{
+    virtual_keys, ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, KEY_EVENT, STD_INPUT_HANDLE,
+    STD_OUTPUT_HANDLE,
 };
 
+use windows::structs::{CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, HANDLE, KEY_EVENT_RECORD};
+
+use windows::functions::{
+    get_std_handle, GetConsoleMode, GetConsoleScreenBufferInfo, ReadConsoleInputW, SetConsoleMode,
+};
 #[derive(Clone, Copy)]
 pub struct TerminalState {
     console_mode: CONSOLE_MODE,
