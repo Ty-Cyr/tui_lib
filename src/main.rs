@@ -188,6 +188,6 @@ fn _draw_test() -> Result<(), String> {
 
 #[allow(unreachable_code)]
 fn main() -> Result<(), String> {
-    // return _draw_test();
+    return _draw_test();
     return _feature_sample();
 }

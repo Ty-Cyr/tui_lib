@@ -4,18 +4,11 @@ use crate::{
     tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
     tui_keys::TuiKeys,
 };
-use windows::Win32::{
-    Foundation::HANDLE,
-    System::Console::{
-        GetConsoleMode, GetConsoleScreenBufferInfo, GetStdHandle, ReadConsoleInputW,
-        SetConsoleMode, CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_MOUSE_INPUT,
-        ENABLE_WINDOW_INPUT, INPUT_RECORD, KEY_EVENT, KEY_EVENT_RECORD, STD_INPUT_HANDLE,
-        STD_OUTPUT_HANDLE,
-    },
-    UI::Input::KeyboardAndMouse::{
-        VIRTUAL_KEY, VK_BACK, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT,
-        VK_SHIFT, VK_SPACE, VK_TAB, VK_UP,
-    },
+
+use super::ffi::{
+    get_std_handle, virtual_keys, GetConsoleMode, GetConsoleScreenBufferInfo, ReadConsoleInputW,
+    SetConsoleMode, CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_MOUSE_INPUT,
+    ENABLE_WINDOW_INPUT, HANDLE, KEY_EVENT, KEY_EVENT_RECORD, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
 };
 
 #[derive(Clone, Copy)]
@@ -53,7 +46,7 @@ impl InputInterfaceT for InputInterface {
     fn new() -> Option<InputInterface> {
         let input_interface;
         unsafe {
-            let input_handle: HANDLE = GetStdHandle(STD_INPUT_HANDLE).ok()?;
+            let input_handle: HANDLE = get_std_handle(STD_INPUT_HANDLE).ok()?;
             input_interface = InputInterface { input_handle };
         }
         return Some(input_interface);
@@ -61,20 +54,25 @@ impl InputInterfaceT for InputInterface {
 
     fn read_keyboard(&self) -> TuiKeys {
         loop {
-            let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
+            let lpbuffer = [&mut Default::default()];
             let mut event_count: u32 = 0;
             unsafe {
-                if !ReadConsoleInputW(self.input_handle.clone(), lpbuffer, &mut event_count)
-                    .as_bool()
+                if !ReadConsoleInputW(
+                    self.input_handle.clone(),
+                    lpbuffer[0],
+                    lpbuffer.len() as u32,
+                    &mut event_count,
+                )
+                .as_bool()
                 {
                     return TuiKeys::Error;
                 }
             }
-            match lpbuffer[0].EventType as u32 {
+            match lpbuffer[0].event_type as u32 {
                 KEY_EVENT => {
                     let key_event_data: KEY_EVENT_RECORD;
-                    unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
-                    if key_event_data.bKeyDown.as_bool() {
+                    unsafe { key_event_data = lpbuffer[0].event.key_event }
+                    if key_event_data.key_down.as_bool() {
                         let event: TuiKeys = parse_key_event_data(key_event_data);
                         match event {
                             TuiKeys::Ignore => continue,
@@ -91,23 +89,28 @@ impl InputInterfaceT for InputInterface {
 
     fn read_raw(&self) -> Option<char> {
         loop {
-            let lpbuffer: &mut [INPUT_RECORD] = &mut [Default::default()];
+            let lpbuffer = [&mut Default::default()];
             let mut event_count: u32 = 0;
             unsafe {
-                if !ReadConsoleInputW(self.input_handle.clone(), lpbuffer, &mut event_count)
-                    .as_bool()
-                {
+                let result = ReadConsoleInputW(
+                    self.input_handle.clone(),
+                    lpbuffer[0],
+                    lpbuffer.len() as u32,
+                    &mut event_count,
+                );
+                if !result.as_bool() {
+                    println!("HERE");
                     return None;
                 }
             }
-            match lpbuffer[0].EventType as u32 {
+            match lpbuffer[0].event_type as u32 {
                 KEY_EVENT => {
                     let key_event_data: KEY_EVENT_RECORD;
-                    unsafe { key_event_data = lpbuffer[0].Event.KeyEvent }
-                    if key_event_data.bKeyDown.as_bool() {
+                    unsafe { key_event_data = lpbuffer[0].event.key_event }
+                    if key_event_data.key_down.as_bool() {
                         let result: char;
                         unsafe {
-                            result = key_event_data.uChar.AsciiChar.try_into().ok()?;
+                            result = key_event_data.u_char.ascii_char.try_into().ok()?;
                         }
                         return Some(result);
                     } else {
@@ -127,16 +130,13 @@ impl OutputInterfaceT for OutputInterface {
     fn get_size(&self) -> Option<(u16, u16)> {
         let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
         unsafe {
-            let handle: HANDLE = GetStdHandle(STD_OUTPUT_HANDLE).ok()?;
+            let handle: HANDLE = get_std_handle(STD_OUTPUT_HANDLE).ok()?;
             if !GetConsoleScreenBufferInfo(handle, &mut screen_info_struct).as_bool() {
                 return None;
             }
         }
-        let size: COORD = screen_info_struct.dwSize;
-        if size.X >= 0 && size.Y >= 0 {
-            return Some((size.X as u16, size.Y as u16));
-        }
-        return None;
+        let size: COORD = screen_info_struct.size;
+        return Some((size.x as u16, size.y as u16));
     }
 }
 
@@ -156,7 +156,7 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
-    let new_mode: CONSOLE_MODE = ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT;
+    let new_mode: CONSOLE_MODE = CONSOLE_MODE(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
     _ = input_interface.set_console_mode(new_mode)?;
     return Some((
         input_interface,
@@ -171,44 +171,44 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
 
 fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
     loop {
-        match VIRTUAL_KEY(data.wVirtualKeyCode) {
-            VK_RETURN => return TuiKeys::Enter,
-            VK_LEFT => return TuiKeys::LeftArrow,
+        match data.virtual_key_code {
+            virtual_keys::VK_RETURN => return TuiKeys::Enter,
+            virtual_keys::VK_LEFT => return TuiKeys::LeftArrow,
 
-            VK_UP => return TuiKeys::UpArrow,
+            virtual_keys::VK_UP => return TuiKeys::UpArrow,
 
-            VK_RIGHT => return TuiKeys::RightArrow,
+            virtual_keys::VK_RIGHT => return TuiKeys::RightArrow,
 
-            VK_DOWN => return TuiKeys::DownArrow,
+            virtual_keys::VK_DOWN => return TuiKeys::DownArrow,
 
-            VK_BACK => {
+            virtual_keys::VK_BACK => {
                 return TuiKeys::Backspace;
             }
 
-            VK_DELETE => {
+            virtual_keys::VK_DELETE => {
                 return TuiKeys::Delete;
             }
 
-            VK_SPACE => {
+            virtual_keys::VK_SPACE => {
                 return TuiKeys::Space;
             }
 
-            VK_TAB => {
+            virtual_keys::VK_TAB => {
                 return TuiKeys::Tab;
             }
 
-            VK_ESCAPE => {
+            virtual_keys::VK_ESCAPE => {
                 return TuiKeys::Escape;
             }
 
-            VK_SHIFT => {
+            virtual_keys::VK_SHIFT => {
                 return TuiKeys::Ignore;
             }
 
             _ => {
                 let char_option: Option<char>;
                 unsafe {
-                    char_option = char::from_u32(data.uChar.UnicodeChar as u32);
+                    char_option = char::from_u32(data.u_char.unicode_char as u32);
                 }
                 if let Some(character) = char_option {
                     match character as u32 {

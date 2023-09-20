@@ -30,7 +30,6 @@ pub struct Winsize {
     pub ws_ypixel: c_ushort,
 }
 extern "C" {
-
     pub fn cfmakeraw(termios: *mut Termios);
     pub fn fcntl(fd: c_int, cmd: c_int, ...) -> c_int;
     pub fn ioctl(fd: c_int, request: c_ulong, ...) -> c_int;
