@@ -90,6 +90,7 @@ fn _feature_sample() -> Result<(), String> {
     tui_terminal.set_background_color(Color::Black);
     let (x, y) = tui_terminal
         .get_cursor_position()
+        .ok()
         .ok_or("Failed To Get Cursor Position")?;
 
     tui_terminal

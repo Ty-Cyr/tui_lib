@@ -1,12 +1,16 @@
-use std::io::Write;
+use std::{error::Error, io::Write};
 
 use crate::{
     font_settings::FontSettings,
     tui_enums::{CursorMode, CursorNav, TuiMode},
-    tui_io::windows_tui_io::{
-        reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
+    tui_errors::{Overflow, TuiIoError, TuiUnexpectedInputError},
+    tui_io::{
+        input_interface::InputInterfaceT,
+        output_interface::OutputInterfaceT,
+        windows_tui_io::{
+            reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
+        },
     },
-    tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
     tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
@@ -184,54 +188,56 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn get_cursor_position(&mut self) -> Option<(u16, u16)> {
+    pub fn get_cursor_position(&mut self) -> Result<(u16, u16), Box<dyn Error>> {
         _ = self.output_interface.write("\x1b[6n".as_bytes());
         _ = self.output_interface.flush();
-        if self.input_interface.read_raw()? != '\x1b' {
-            return None;
+        let mut input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+        if input != '\x1b' {
+            return Err(TuiUnexpectedInputError::new('\x1b', input));
         }
-        if self.input_interface.read_raw()? != '[' {
-            return None;
+        input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+        if input != '[' {
+            return Err(TuiUnexpectedInputError::new('\x1b', input));
         }
         let mut y: u16 = 0;
         let mut x: u16 = 0;
         loop {
-            let input = self.input_interface.read_raw()?;
+            input = self.input_interface.read_raw().ok_or(TuiIoError)?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < y {
-                        return None;
+                        return Err(Overflow.into());
                     }
                     y *= 10;
                     if u16::MAX - y < digit {
-                        return None;
+                        return Err(Overflow.into());
                     }
                     y += digit;
                 }
                 0x3B => break,
-                _ => return None,
+                _ => return Err(TuiUnexpectedInputError::new(';', input)),
             }
         }
         loop {
-            let input = self.input_interface.read_raw()?;
+            input = self.input_interface.read_raw().ok_or(TuiIoError)?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < x {
-                        return None;
+                        return Err(Overflow.into());
                     }
                     x *= 10;
                     if u16::MAX - x < digit {
-                        return None;
+                        return Err(Overflow.into());
                     }
                     x += digit;
                 }
                 0x52 => break,
-                _ => return None,
+                _ => return Err(TuiUnexpectedInputError::new('R', input)),
             }
         }
-        return Some((x, y));
+        return Ok((x, y));
     }
 
     fn send_cursor_code(&mut self) {
@@ -407,126 +413,5 @@ impl Drop for TuiTerminal {
         self.send_font_settings(&FontSettings::default());
         self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::tui_terminal::TuiTerminal;
-
-    fn get_center(tui_terminal: &mut TuiTerminal) -> (u16, u16) {
-        let (x, y) = tui_terminal.get_teminal_size().expect("Terminal Size");
-        return (x / 2, y / 2);
-    }
-
-    #[test]
-    fn test_set_cursor_position() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (x, y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_restore_cursor_position() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (x, y) = get_center(&mut tui_terminal);
-        let position1 = tui_terminal.get_cursor_position();
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.restore_cursor_position();
-        let position2 = tui_terminal.get_cursor_position();
-        assert_eq!(position1, position2);
-    }
-
-    #[test]
-    fn test_shift_cursor_next() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (mut x, mut y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Next(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        x = 1;
-        y += 1;
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_shift_cursor_previous() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (mut x, mut y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Previous(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        x = 1;
-        y -= 1;
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_shift_cursor_forwards() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (mut x, y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Forwards(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        x += 1;
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_shift_cursor_backwards() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (mut x, y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Backwards(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        x -= 1;
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_shift_cursor_up() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (x, mut y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Up(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        y -= 1;
-        assert_eq!(position, Some((x, y)));
-    }
-
-    #[test]
-    fn test_shift_cursor_down() {
-        let mut tui_terminal =
-            TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
-        let (x, mut y) = get_center(&mut tui_terminal);
-        tui_terminal.save_cursor_position();
-        tui_terminal.set_cursor_position(x, y);
-        tui_terminal.shift_cursor(crate::tui_enums::CursorNav::Down(1));
-        let position = tui_terminal.get_cursor_position();
-        tui_terminal.restore_cursor_position();
-        y += 1;
-        assert_eq!(position, Some((x, y)));
     }
 }

@@ -10,4 +10,9 @@ pub mod tui_keys;
 
 pub mod tui_terminal;
 
+pub mod tui_errors;
+
 mod tui_io;
+
+#[cfg(test)]
+mod tui_terminal_tests;
