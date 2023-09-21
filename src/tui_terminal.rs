@@ -428,7 +428,7 @@ mod tests {
         tui_terminal.set_cursor_position(x, y);
         let position = tui_terminal.get_cursor_position();
         tui_terminal.restore_cursor_position();
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -441,7 +441,7 @@ mod tests {
         tui_terminal.set_cursor_position(x, y);
         tui_terminal.restore_cursor_position();
         let position2 = tui_terminal.get_cursor_position();
-        assert_eq!(position1.expect("Position1"), position2.expect("Position2"));
+        assert_eq!(position1, position2);
     }
 
     #[test]
@@ -456,7 +456,7 @@ mod tests {
         tui_terminal.restore_cursor_position();
         x = 1;
         y += 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -471,7 +471,7 @@ mod tests {
         tui_terminal.restore_cursor_position();
         x = 1;
         y -= 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -485,7 +485,7 @@ mod tests {
         let position = tui_terminal.get_cursor_position();
         tui_terminal.restore_cursor_position();
         x += 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -499,7 +499,7 @@ mod tests {
         let position = tui_terminal.get_cursor_position();
         tui_terminal.restore_cursor_position();
         x -= 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -513,7 +513,7 @@ mod tests {
         let position = tui_terminal.get_cursor_position();
         tui_terminal.restore_cursor_position();
         y -= 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 
     #[test]
@@ -527,6 +527,6 @@ mod tests {
         let position = tui_terminal.get_cursor_position();
         tui_terminal.restore_cursor_position();
         y += 1;
-        assert_eq!(position.expect("Position"), (x, y));
+        assert_eq!(position, Some((x, y)));
     }
 }
