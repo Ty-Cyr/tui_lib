@@ -28,12 +28,12 @@ pub struct TuiTerminal {
 
 impl TuiTerminal {
     pub fn new(tui_mode: TuiMode) -> Option<TuiTerminal> {
+        let lock = TUI_TERMINAL_MUTEX.lock().ok()?;
         let (input_interface, output_interface, terminal_state): (
             InputInterface,
             OutputInterface,
             TerminalState,
         ) = setup_terminal()?;
-        let lock = TUI_TERMINAL_MUTEX.lock().ok()?;
         let mut tui_terminal = TuiTerminal {
             font_settings: FontSettings::default(),
             cursor_mode: CursorMode::Default,
