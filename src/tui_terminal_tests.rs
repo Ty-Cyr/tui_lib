@@ -17,7 +17,7 @@ fn test_set_cursor_position() {
     tui_terminal.restore_cursor_position();
     drop(tui_terminal);
 
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
@@ -32,11 +32,11 @@ fn test_restore_cursor_position() {
     tui_terminal.restore_cursor_position();
     let position2 = tui_terminal.get_cursor_position();
     drop(tui_terminal);
-    assert_eq!(position1.unwrap(), position2.unwrap());
+    assert_eq!(position1, position2);
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_next() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -49,11 +49,11 @@ fn test_shift_cursor_next() {
     x = 1;
     y += 1;
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_previous() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -66,11 +66,11 @@ fn test_shift_cursor_previous() {
     x = 1;
     y -= 1;
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_forwards() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -82,11 +82,11 @@ fn test_shift_cursor_forwards() {
     tui_terminal.restore_cursor_position();
     x += 1;
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_backwards() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -99,11 +99,11 @@ fn test_shift_cursor_backwards() {
     x -= 1;
 
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_up() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -116,11 +116,11 @@ fn test_shift_cursor_up() {
     y -= 1;
 
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }
 
 #[allow(unused)]
-// #[test]
+#[test]
 fn test_shift_cursor_down() {
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
@@ -132,5 +132,5 @@ fn test_shift_cursor_down() {
     tui_terminal.restore_cursor_position();
     y += 1;
     drop(tui_terminal);
-    assert_eq!(position.unwrap(), (x, y));
+    assert_eq!(position, Ok((x, y)));
 }

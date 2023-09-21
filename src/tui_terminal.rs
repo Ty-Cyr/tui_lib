@@ -1,9 +1,9 @@
-use std::{error::Error, io::Write};
+use std::{io::Write, sync::Mutex};
 
 use crate::{
     font_settings::FontSettings,
     tui_enums::{CursorMode, CursorNav, TuiMode},
-    tui_errors::{Overflow, TuiIoError, TuiUnexpectedInputError},
+    tui_errors::CursorPositionError,
     tui_io::{
         input_interface::InputInterfaceT,
         output_interface::OutputInterfaceT,
@@ -15,6 +15,7 @@ use crate::{
     Color, StringPlus, ThreeBool,
 };
 
+static TUI_TERMINAL_MUTEX: Mutex<()> = Mutex::new(());
 #[allow(unused)]
 pub struct TuiTerminal {
     font_settings: FontSettings,
@@ -22,6 +23,7 @@ pub struct TuiTerminal {
     output_interface: OutputInterface,
     input_interface: InputInterface,
     terminal_state: TerminalState,
+    lock: std::sync::MutexGuard<'static, ()>,
 }
 
 impl TuiTerminal {
@@ -31,12 +33,14 @@ impl TuiTerminal {
             OutputInterface,
             TerminalState,
         ) = setup_terminal()?;
+        let lock = TUI_TERMINAL_MUTEX.lock().ok()?;
         let mut tui_terminal = TuiTerminal {
             font_settings: FontSettings::default(),
             cursor_mode: CursorMode::Default,
             output_interface: output_interface,
             input_interface: input_interface,
             terminal_state: terminal_state,
+            lock: lock,
         };
         match tui_mode {
             TuiMode::FullScreen => tui_terminal.alt_buffer(),
@@ -188,53 +192,54 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn get_cursor_position(&mut self) -> Result<(u16, u16), Box<dyn Error>> {
+    pub fn get_cursor_position(&mut self) -> Result<(u16, u16), CursorPositionError> {
+        use CursorPositionError::{IOError, OverflowError, TuiUnexpectedInputError};
         _ = self.output_interface.write("\x1b[6n".as_bytes());
         _ = self.output_interface.flush();
-        let mut input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+        let mut input = self.input_interface.read_raw().ok_or(IOError)?;
         if input != '\x1b' {
-            return Err(TuiUnexpectedInputError::new('\x1b', input));
+            return Err(TuiUnexpectedInputError('\x1b', input));
         }
-        input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+        input = self.input_interface.read_raw().ok_or(IOError)?;
         if input != '[' {
-            return Err(TuiUnexpectedInputError::new('\x1b', input));
+            return Err(TuiUnexpectedInputError('\x1b', input));
         }
         let mut y: u16 = 0;
         let mut x: u16 = 0;
         loop {
-            input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+            input = self.input_interface.read_raw().ok_or(IOError)?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < y {
-                        return Err(Overflow.into());
+                        return Err(OverflowError);
                     }
                     y *= 10;
                     if u16::MAX - y < digit {
-                        return Err(Overflow.into());
+                        return Err(OverflowError);
                     }
                     y += digit;
                 }
                 0x3B => break,
-                _ => return Err(TuiUnexpectedInputError::new(';', input)),
+                _ => return Err(TuiUnexpectedInputError(';', input)),
             }
         }
         loop {
-            input = self.input_interface.read_raw().ok_or(TuiIoError)?;
+            input = self.input_interface.read_raw().ok_or(IOError)?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < x {
-                        return Err(Overflow.into());
+                        return Err(OverflowError);
                     }
                     x *= 10;
                     if u16::MAX - x < digit {
-                        return Err(Overflow.into());
+                        return Err(OverflowError);
                     }
                     x += digit;
                 }
                 0x52 => break,
-                _ => return Err(TuiUnexpectedInputError::new('R', input)),
+                _ => return Err(TuiUnexpectedInputError('R', input)),
             }
         }
         return Ok((x, y));
