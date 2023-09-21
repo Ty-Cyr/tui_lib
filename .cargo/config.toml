@@ -1,2 +1,4 @@
 [alias] 
 t = "test -- --test-threads=1"
+r = "run"
+rr = "r --release"
