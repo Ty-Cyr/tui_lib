@@ -1,4 +1,9 @@
-use std::{io::Write, sync::Mutex};
+use std::{
+    io::Write,
+    sync::{Mutex, MutexGuard},
+};
+
+static TUI_TERMINAL_LOCK: Mutex<()> = Mutex::new(());
 
 use crate::{
     font_settings::FontSettings,
@@ -15,20 +20,18 @@ use crate::{
     Color, StringPlus, ThreeBool,
 };
 
-static TUI_TERMINAL_MUTEX: Mutex<()> = Mutex::new(());
-#[allow(unused)]
 pub struct TuiTerminal {
     font_settings: FontSettings,
     cursor_mode: CursorMode,
     output_interface: OutputInterface,
     input_interface: InputInterface,
     terminal_state: TerminalState,
-    lock: std::sync::MutexGuard<'static, ()>,
+    lock: MutexGuard<'static, ()>,
 }
 
 impl TuiTerminal {
     pub fn new(tui_mode: TuiMode) -> Option<TuiTerminal> {
-        let lock = TUI_TERMINAL_MUTEX.lock().ok()?;
+        let lock: MutexGuard<'static, ()> = TUI_TERMINAL_LOCK.lock().ok()?;
         let (input_interface, output_interface, terminal_state): (
             InputInterface,
             OutputInterface,
@@ -419,6 +422,6 @@ impl Drop for TuiTerminal {
         self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
         _ = self.output_interface.flush();
-        let _ = &self.lock;
+        let _lock = &self.lock;
     }
 }

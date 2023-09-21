@@ -1,3 +1,5 @@
+use std::io::stdin;
+
 use crate::tui_terminal::TuiTerminal;
 
 fn get_center(tui_terminal: &mut TuiTerminal) -> (u16, u16) {
@@ -15,7 +17,6 @@ fn test_set_cursor_position() {
     let position = tui_terminal.get_cursor_position();
     tui_terminal.restore_cursor_position();
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
@@ -30,7 +31,6 @@ fn test_restore_cursor_position() {
     tui_terminal.restore_cursor_position();
     let position2 = tui_terminal.get_cursor_position();
     drop(tui_terminal);
-
     assert_eq!(position1, position2);
 }
 
@@ -47,7 +47,6 @@ fn test_shift_cursor_next() {
     x = 1;
     y += 1;
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
@@ -64,7 +63,6 @@ fn test_shift_cursor_previous() {
     x = 1;
     y -= 1;
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
@@ -80,7 +78,6 @@ fn test_shift_cursor_forwards() {
     tui_terminal.restore_cursor_position();
     x += 1;
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
@@ -96,7 +93,6 @@ fn test_shift_cursor_backwards() {
     tui_terminal.restore_cursor_position();
     x -= 1;
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
@@ -112,12 +108,12 @@ fn test_shift_cursor_up() {
     tui_terminal.restore_cursor_position();
     y -= 1;
     drop(tui_terminal);
-
     assert_eq!(position, Ok((x, y)));
 }
 
 #[test]
 fn test_shift_cursor_down() {
+    let lock = stdin().lock();
     let mut tui_terminal =
         TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
     let (x, mut y) = get_center(&mut tui_terminal);
@@ -127,6 +123,8 @@ fn test_shift_cursor_down() {
     let position = tui_terminal.get_cursor_position();
     tui_terminal.restore_cursor_position();
     y += 1;
+
     drop(tui_terminal);
     assert_eq!(position, Ok((x, y)));
+    _ = lock;
 }
