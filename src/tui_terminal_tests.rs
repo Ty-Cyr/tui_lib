@@ -5,7 +5,6 @@ fn get_center(tui_terminal: &mut TuiTerminal) -> (u16, u16) {
     return (x / 2, y / 2);
 }
 
-#[allow(unused)]
 #[test]
 fn test_set_cursor_position() {
     let mut tui_terminal =
@@ -20,7 +19,6 @@ fn test_set_cursor_position() {
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_restore_cursor_position() {
     let mut tui_terminal =
@@ -32,10 +30,10 @@ fn test_restore_cursor_position() {
     tui_terminal.restore_cursor_position();
     let position2 = tui_terminal.get_cursor_position();
     drop(tui_terminal);
+
     assert_eq!(position1, position2);
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_next() {
     let mut tui_terminal =
@@ -49,10 +47,10 @@ fn test_shift_cursor_next() {
     x = 1;
     y += 1;
     drop(tui_terminal);
+
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_previous() {
     let mut tui_terminal =
@@ -66,10 +64,10 @@ fn test_shift_cursor_previous() {
     x = 1;
     y -= 1;
     drop(tui_terminal);
+
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_forwards() {
     let mut tui_terminal =
@@ -82,10 +80,10 @@ fn test_shift_cursor_forwards() {
     tui_terminal.restore_cursor_position();
     x += 1;
     drop(tui_terminal);
+
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_backwards() {
     let mut tui_terminal =
@@ -97,12 +95,11 @@ fn test_shift_cursor_backwards() {
     let position = tui_terminal.get_cursor_position();
     tui_terminal.restore_cursor_position();
     x -= 1;
-
     drop(tui_terminal);
+
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_up() {
     let mut tui_terminal =
@@ -114,12 +111,11 @@ fn test_shift_cursor_up() {
     let position = tui_terminal.get_cursor_position();
     tui_terminal.restore_cursor_position();
     y -= 1;
-
     drop(tui_terminal);
+
     assert_eq!(position, Ok((x, y)));
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_down() {
     let mut tui_terminal =

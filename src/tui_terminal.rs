@@ -418,5 +418,7 @@ impl Drop for TuiTerminal {
         self.send_font_settings(&FontSettings::default());
         self.main_buffer();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
+        _ = self.output_interface.flush();
+        let _ = &self.lock;
     }
 }
