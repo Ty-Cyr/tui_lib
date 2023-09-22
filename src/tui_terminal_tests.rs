@@ -3,7 +3,7 @@ use crate::tui_terminal::TuiTerminal;
 fn get_center(tui_terminal: &mut TuiTerminal) -> Result<(u16, u16), String> {
     match tui_terminal.get_teminal_size() {
         Ok((x, y)) => return Ok((x / 2, y / 2)),
-        Err(_) => return Err("Failed To Get Terminal Size".to_string()),
+        Err(error_string) => return Err(error_string),
     }
 }
 

@@ -391,7 +391,7 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn get_teminal_size(&self) -> Result<(u16, u16), ()> {
+    pub fn get_teminal_size(&self) -> Result<(u16, u16), String> {
         return self.output_interface.get_size();
     }
 

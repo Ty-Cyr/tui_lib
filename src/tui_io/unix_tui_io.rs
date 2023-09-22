@@ -9,7 +9,7 @@ use std::io::{stdin, stdout, Stdout, Write};
 use std::os::unix::prelude::AsRawFd;
 
 use self::unix::constants::{ONLCR, OPOST, O_NONBLOCK, STDOUT_FILENO, TCSADRAIN, TIOCGWINSZ};
-use self::unix::functions::{fcntl, ioctl, tcgetattr, tcsetattr};
+use self::unix::functions::{fcntl, get_errno_error, ioctl, tcgetattr, tcsetattr};
 use self::unix::structs::{Termios, Winsize};
 
 use super::input_interface::InputInterfaceT;
@@ -26,19 +26,19 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    pub fn get_input_mode(&self) -> Option<Termios> {
+    pub fn get_input_mode(&self) -> Result<Termios, String> {
         let mut termios_struct: Termios = Termios::default();
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
-                return None;
+                return Err(get_errno_error());
             }
         }
-        return Some(termios_struct);
+        return Ok(termios_struct);
     }
-    pub fn set_input_mode(&self, mut termios_struct: Termios) -> Result<(), ()> {
+    pub fn set_input_mode(&self, mut termios_struct: Termios) -> Result<(), String> {
         unsafe {
             if -1 == tcsetattr(self.input_fd, TCSADRAIN, &mut termios_struct) {
-                return Err(());
+                return Err(get_errno_error());
             }
         }
         return Ok(());
@@ -153,16 +153,11 @@ pub struct OutputInterface {
 }
 
 impl OutputInterfaceT for OutputInterface {
-    fn get_size(&self) -> Result<(u16, u16), ()> {
-        let mut window_size: Winsize = Winsize {
-            ws_row: 0,
-            ws_col: 0,
-            ws_xpixel: 0,
-            ws_ypixel: 0,
-        };
+    fn get_size(&self) -> Result<(u16, u16), String> {
+        let mut window_size: Winsize = Winsize::default();
         unsafe {
             if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
-                return Err(());
+                return Err(get_errno_error());
             }
         }
         return Ok((window_size.ws_col as u16, window_size.ws_row as u16));
@@ -185,7 +180,7 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
         output_handle: stdout(),
     };
     let terminal_state: TerminalState = TerminalState {
-        termios_struct: input_interface.get_input_mode()?,
+        termios_struct: input_interface.get_input_mode().ok()?,
     };
     input_interface
         .set_input_mode(input_interface.get_raw_termios_struct())

@@ -25,6 +25,17 @@ pub struct Termios {
     pub c_ospeed: u32,
 }
 
+#[cfg(not(target_os = "macos"))]
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct Winsize {
+    pub ws_row: u16,
+    pub ws_col: u16,
+    pub ws_xpixel: u16,
+    pub ws_ypixel: u16,
+}
+
+#[cfg(target_os = "macos")]
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct Winsize {
