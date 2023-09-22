@@ -13,7 +13,7 @@ use crate::{
     tui_io::{
         input_interface::InputInterfaceT,
         output_interface::OutputInterfaceT,
-        windows_tui_io::{
+        tui_io::{
             reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
         },
     },
