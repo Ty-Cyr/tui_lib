@@ -8,8 +8,8 @@ fn get_center(tui_terminal: &mut TuiTerminal) -> (u16, u16) {
 #[allow(unused)]
 #[test]
 fn test_set_cursor_position() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (x, y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -25,8 +25,8 @@ fn test_set_cursor_position() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_restore_cursor_position() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (x, y) = get_center(&mut tui_terminal);
     let position1 = tui_terminal.get_cursor_position();
     tui_terminal.save_cursor_position();
@@ -45,8 +45,8 @@ fn test_restore_cursor_position() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_next() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (mut x, mut y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -66,8 +66,8 @@ fn test_shift_cursor_next() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_previous() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (mut x, mut y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -88,8 +88,8 @@ fn test_shift_cursor_previous() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_forwards() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (mut x, y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -109,8 +109,8 @@ fn test_shift_cursor_forwards() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_backwards() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (mut x, y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -130,8 +130,8 @@ fn test_shift_cursor_backwards() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_up() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable To Create TuiTerminal")?;
     let (x, mut y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
@@ -151,8 +151,8 @@ fn test_shift_cursor_up() -> Result<(), String> {
 #[allow(unused)]
 #[test]
 fn test_shift_cursor_down() -> Result<(), String> {
-    let mut tui_terminal =
-        TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen).expect("Terminal");
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .ok_or("Unable to Create Tui Terminal")?;
     let (x, mut y) = get_center(&mut tui_terminal);
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
