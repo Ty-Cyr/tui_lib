@@ -45,6 +45,7 @@ impl TuiTerminal {
             terminal_state: terminal_state,
             lock: lock,
         };
+        tui_terminal.enable_mouse_events();
         match tui_mode {
             TuiMode::FullScreen => tui_terminal.alt_buffer(),
             _ => {}
@@ -412,6 +413,16 @@ impl TuiTerminal {
         self.font_settings = FontSettings::default();
         self.send_font_settings(&FontSettings::default());
     }
+
+    fn enable_mouse_events(&mut self) {
+        _ = self.output_interface.write("\x1b[?1003h".as_bytes());
+        _ = self.output_interface.flush();
+    }
+
+    fn disable_mouse_events(&mut self) {
+        _ = self.output_interface.write("\x1b[?1003l".as_bytes());
+        _ = self.output_interface.flush();
+    }
 }
 
 impl Drop for TuiTerminal {
@@ -420,6 +431,7 @@ impl Drop for TuiTerminal {
         self.send_cursor_code();
         self.send_font_settings(&FontSettings::default());
         self.main_buffer();
+        self.disable_mouse_events();
         reset_terminal_settings(&self.input_interface, &self.terminal_state);
         _ = self.output_interface.flush();
         let _lock = &self.lock;

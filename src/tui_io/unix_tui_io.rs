@@ -1,4 +1,4 @@
-use crate::tui_keys::TuiKeys;
+use crate::tui_events::TuiEvents;
 use std::ffi::{c_char, c_void};
 
 mod unix;
@@ -78,30 +78,30 @@ impl InputInterface {
         return Some((buffer[0] as u8) as char);
     }
 
-    fn handle_escape_input_s1(&self) -> TuiKeys {
+    fn handle_escape_input_s1(&self) -> TuiEvents {
         let input_char_option: Option<char> = self.try_read_char();
         match input_char_option {
-            None => return TuiKeys::Escape,
+            None => return TuiEvents::Escape,
             Some('[') => return self.handle_escape_input_s2(),
-            Some(_) => return TuiKeys::Error,
+            Some(_) => return TuiEvents::Error,
         };
     }
 
-    fn handle_escape_input_s2(&self) -> TuiKeys {
+    fn handle_escape_input_s2(&self) -> TuiEvents {
         let input_char: char = self.read_char();
         match input_char {
-            'A' => return TuiKeys::UpArrow,
-            'B' => return TuiKeys::DownArrow,
-            'C' => return TuiKeys::RightArrow,
-            'D' => return TuiKeys::LeftArrow,
+            'A' => return TuiEvents::UpArrow,
+            'B' => return TuiEvents::DownArrow,
+            'C' => return TuiEvents::RightArrow,
+            'D' => return TuiEvents::LeftArrow,
             '3' => {
                 if let Some('~') = self.try_read_char() {
-                    return TuiKeys::Delete;
+                    return TuiEvents::Delete;
                 }
-                return TuiKeys::Error;
+                return TuiEvents::Error;
             }
             _ => {
-                return TuiKeys::Error;
+                return TuiEvents::Error;
             }
         }
     }
@@ -113,29 +113,29 @@ impl InputInterfaceT for InputInterface {
         return Some(InputInterface { input_fd: input_fd });
     }
 
-    fn read_keyboard(&self) -> TuiKeys {
+    fn read_parsed(&self) -> TuiEvents {
         let input_char: char = self.read_char();
         match input_char {
             '\x1b' => {
                 return self.handle_escape_input_s1();
             }
             '\x7F' => {
-                return TuiKeys::Backspace;
+                return TuiEvents::Backspace;
             }
             '\n' | '\r' => {
-                return TuiKeys::Enter;
+                return TuiEvents::Enter;
             }
             ' ' => {
-                return TuiKeys::Space;
+                return TuiEvents::Space;
             }
             '\t' => {
-                return TuiKeys::Tab;
+                return TuiEvents::Tab;
             }
             _ => match input_char as u32 {
-                0x20..=0x7D => return TuiKeys::AsciiReadable(input_char),
-                0 => TuiKeys::Ignore,
-                1..=26 => return TuiKeys::Control((input_char as u8 + 0x40) as char),
-                _ => return TuiKeys::Other(input_char),
+                0x20..=0x7D => return TuiEvents::AsciiReadable(input_char),
+                0 => TuiEvents::Ignore,
+                1..=26 => return TuiEvents::Control((input_char as u8 + 0x40) as char),
+                _ => return TuiEvents::Other(input_char),
             },
         }
     }
