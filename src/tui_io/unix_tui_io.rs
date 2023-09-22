@@ -35,10 +35,13 @@ impl InputInterface {
         }
         return Some(termios_struct);
     }
-    pub fn set_input_mode(&self, mut termios_struct: Termios) {
+    pub fn set_input_mode(&self, mut termios_struct: Termios) -> Result<(), ()> {
         unsafe {
-            tcsetattr(self.input_fd, TCSADRAIN, &mut termios_struct);
+            if -1 == tcsetattr(self.input_fd, TCSADRAIN, &mut termios_struct) {
+                return Err(());
+            }
         }
+        return Ok(());
     }
 
     pub fn get_raw_termios_struct(&self) -> Termios {
@@ -184,13 +187,15 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
     let terminal_state: TerminalState = TerminalState {
         termios_struct: input_interface.get_input_mode()?,
     };
-    input_interface.set_input_mode(input_interface.get_raw_termios_struct());
+    input_interface
+        .set_input_mode(input_interface.get_raw_termios_struct())
+        .ok()?;
 
     return Some((input_interface, output_interface, terminal_state));
 }
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
-    input_interface.set_input_mode(terminal_state.termios_struct);
+    _ = input_interface.set_input_mode(terminal_state.termios_struct);
 }
 
 #[cfg(not(target_os = "macos"))]
