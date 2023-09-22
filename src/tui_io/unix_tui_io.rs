@@ -27,7 +27,7 @@ pub struct InputInterface {
 
 impl InputInterface {
     pub fn get_input_mode(&self) -> Option<Termios> {
-        let mut termios_struct: Termios = new_termios();
+        let mut termios_struct: Termios = Termios::default();
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
                 return None;
@@ -45,7 +45,7 @@ impl InputInterface {
     }
 
     pub fn get_raw_termios_struct(&self) -> Termios {
-        let mut termios_struct: Termios = new_termios();
+        let mut termios_struct: Termios = Termios::default();
         unsafe {
             cfmakeraw(&mut termios_struct);
             termios_struct.c_oflag |= ONLCR | OPOST;
@@ -196,32 +196,4 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
     _ = input_interface.set_input_mode(terminal_state.termios_struct);
-}
-
-#[cfg(not(target_os = "macos"))]
-pub fn new_termios() -> Termios {
-    let termios_struct: Termios = Termios {
-        c_iflag: 0,
-        c_oflag: 0,
-        c_cflag: 0,
-        c_lflag: 0,
-        c_line: 0,
-        c_cc: [0; 32],
-        c_ispeed: 0,
-        c_ospeed: 0,
-    };
-    return termios_struct;
-}
-#[cfg(target_os = "macos")]
-pub fn new_termios() -> Termios {
-    let termios_struct: Termios = Termios {
-        c_iflag: 0,
-        c_oflag: 0,
-        c_cflag: 0,
-        c_lflag: 0,
-        c_cc: [0; 20],
-        c_ispeed: 0,
-        c_ospeed: 0,
-    };
-    return termios_struct;
 }
