@@ -1,3 +1,4 @@
+use std::env;
 use tui_lib::{
     string_plus::{DecLine, StringPlusTrait},
     tui_enums::ThreeBool,
@@ -6,7 +7,7 @@ use tui_lib::{
     tui_terminal::TuiTerminal,
 };
 
-fn _feature_sample() -> Result<(), String> {
+fn feature_sample() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
     tui_terminal.set_background_color(Color::Black);
@@ -163,7 +164,7 @@ fn _feature_sample() -> Result<(), String> {
     }
 }
 
-fn _draw_test() -> Result<(), String> {
+fn draw_test() -> Result<(), String> {
     let mut tui_terminal =
         TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Get Tui Terminal")?;
     tui_terminal.set_cursor_position(1, 1);
@@ -189,6 +190,14 @@ fn _draw_test() -> Result<(), String> {
 
 #[allow(unreachable_code)]
 fn main() -> Result<(), String> {
-    // return _draw_test();
-    return _feature_sample();
+    let mut args = env::args();
+    if args.len() != 2 {
+        return Err("Usage: <1 | 2>".into());
+    }
+    args.next();
+    return match args.next().ok_or("Usage: <1 | 2>")?.as_str() {
+        "1" => draw_test(),
+        "2" => feature_sample(),
+        _ => Err("Usage: <1 | 2>".into()),
+    };
 }

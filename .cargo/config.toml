@@ -1,4 +1,6 @@
 [alias] 
 t = "test -- --test-threads=1"
-r = "run"
-rr = "r --release"
+r1 = "run -- 1"
+r2 = "run -- 2"
+rr1 = "r --release -- 1"
+rr2 = "r --release -- 2"
