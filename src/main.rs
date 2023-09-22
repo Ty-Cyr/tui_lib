@@ -3,7 +3,7 @@ use tui_lib::{
     string_plus::{DecLine, StringPlusTrait},
     tui_enums::ThreeBool,
     tui_enums::{Color, CursorMode, TuiMode},
-    tui_keys::TuiKeys,
+    tui_events::TuiEvents,
     tui_terminal::TuiTerminal,
 };
 
@@ -102,28 +102,34 @@ fn feature_sample() -> Result<(), String> {
             .ok_or("Failed To get Size")?;
         tui_terminal
             .println(String::new() + "Size: (" + &a.to_string() + ", " + &b.to_string() + ")");
-        let event: TuiKeys = tui_terminal.get_keyboard_event();
+        let event: TuiEvents = tui_terminal.get_event();
         match event {
-            TuiKeys::Enter => tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0))),
-            TuiKeys::LeftArrow => {
+            TuiEvents::Enter => {
+                tui_terminal.println("NEWLINE".set_font_color(Color::RGB(0, 255, 0)))
+            }
+            TuiEvents::LeftArrow => {
                 tui_terminal.println("Left Arrow".set_font_color(Color::BrightBlue))
             }
-            TuiKeys::RightArrow => {
+            TuiEvents::RightArrow => {
                 tui_terminal.println("Right Arrow".set_font_color(Color::BrightBlue))
             }
-            TuiKeys::UpArrow => tui_terminal.println("Up Arrow".set_font_color(Color::BrightBlue)),
-            TuiKeys::DownArrow => {
+            TuiEvents::UpArrow => {
+                tui_terminal.println("Up Arrow".set_font_color(Color::BrightBlue))
+            }
+            TuiEvents::DownArrow => {
                 tui_terminal.println("Down Arrow".set_font_color(Color::BrightBlue))
             }
-            TuiKeys::Backspace => {
+            TuiEvents::Backspace => {
                 tui_terminal.println("BACKSPACE".set_font_color(Color::RGB(255, 255, 0)))
             }
-            TuiKeys::Delete => {
+            TuiEvents::Delete => {
                 tui_terminal.println("DELETE".set_font_color(Color::RGB(255, 255, 0)))
             }
-            TuiKeys::Space => tui_terminal.println("SPACE".set_font_color(Color::RGB(255, 0, 255))),
-            TuiKeys::Tab => tui_terminal.println("TAB".set_font_color(Color::RGB(255, 0, 255))),
-            TuiKeys::Escape => {
+            TuiEvents::Space => {
+                tui_terminal.println("SPACE".set_font_color(Color::RGB(255, 0, 255)))
+            }
+            TuiEvents::Tab => tui_terminal.println("TAB".set_font_color(Color::RGB(255, 0, 255))),
+            TuiEvents::Escape => {
                 tui_terminal.println(
                     "ESCAPE"
                         .set_bold(ThreeBool::True)
@@ -133,11 +139,11 @@ fn feature_sample() -> Result<(), String> {
                 return Ok(());
             }
 
-            TuiKeys::AsciiReadable(c) => {
+            TuiEvents::AsciiReadable(c) => {
                 tui_terminal.println(c.to_string());
             }
 
-            TuiKeys::Control(c) => {
+            TuiEvents::Control(c) => {
                 tui_terminal.print(DecLine::TopLeft);
                 tui_terminal.print(DecLine::HorizontalBar);
                 tui_terminal.println(DecLine::TopRight);
@@ -149,7 +155,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println(DecLine::BottomRight);
             }
 
-            TuiKeys::Other(c) => {
+            TuiEvents::Other(c) => {
                 tui_terminal.println("Key: ".to_string() + &c.to_string());
                 tui_terminal.println("Key-U8: ".to_string() + &(c as u8).to_string());
             }
@@ -179,9 +185,9 @@ fn draw_test() -> Result<(), String> {
             .set_font_color(Color::Magenta),
     );
     loop {
-        let event = tui_terminal.get_keyboard_event();
+        let event = tui_terminal.get_event();
         match event {
-            TuiKeys::Control('C') | TuiKeys::Control('c') | TuiKeys::Escape => break,
+            TuiEvents::Control('C') | TuiEvents::Control('c') | TuiEvents::Escape => break,
             _ => continue,
         }
     }

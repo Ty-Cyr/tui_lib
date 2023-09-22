@@ -6,7 +6,7 @@ use tui_enums::{Color, ThreeBool};
 
 mod font_settings;
 
-pub mod tui_keys;
+pub mod tui_events;
 
 pub mod tui_terminal;
 

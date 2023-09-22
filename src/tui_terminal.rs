@@ -9,6 +9,7 @@ use crate::{
     font_settings::FontSettings,
     tui_enums::{CursorMode, CursorNav, TuiMode},
     tui_errors::CursorPositionError,
+    tui_events::TuiEvents,
     tui_io::{
         input_interface::InputInterfaceT,
         output_interface::OutputInterfaceT,
@@ -16,7 +17,6 @@ use crate::{
             reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
         },
     },
-    tui_keys::TuiKeys,
     Color, StringPlus, ThreeBool,
 };
 
@@ -394,8 +394,8 @@ impl TuiTerminal {
         return self.output_interface.get_size();
     }
 
-    pub fn get_keyboard_event(&self) -> TuiKeys {
-        return self.input_interface.read_keyboard();
+    pub fn get_event(&self) -> TuiEvents {
+        return self.input_interface.read_parsed();
     }
 
     fn alt_buffer(&mut self) {

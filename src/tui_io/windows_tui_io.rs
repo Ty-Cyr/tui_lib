@@ -3,8 +3,8 @@ use std::io::{stdout, Stdout, Write};
 mod windows;
 
 use crate::{
+    tui_events::TuiEvents,
     tui_io::{input_interface::InputInterfaceT, output_interface::OutputInterfaceT},
-    tui_keys::TuiKeys,
 };
 
 use windows::constants::{
@@ -58,7 +58,7 @@ impl InputInterfaceT for InputInterface {
         return Some(input_interface);
     }
 
-    fn read_keyboard(&self) -> TuiKeys {
+    fn read_parsed(&self) -> TuiEvents {
         loop {
             let lpbuffer = [&mut Default::default()];
             let mut event_count: u32 = 0;
@@ -71,7 +71,7 @@ impl InputInterfaceT for InputInterface {
                 )
                 .as_bool()
                 {
-                    return TuiKeys::Error;
+                    return TuiEvents::Error;
                 }
             }
             match lpbuffer[0].event_type as u32 {
@@ -79,9 +79,9 @@ impl InputInterfaceT for InputInterface {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = lpbuffer[0].event.key_event }
                     if key_event_data.key_down.as_bool() {
-                        let event: TuiKeys = parse_key_event_data(key_event_data);
+                        let event: TuiEvents = parse_key_event_data(key_event_data);
                         match event {
-                            TuiKeys::Ignore => continue,
+                            TuiEvents::Ignore => continue,
                             _ => return event,
                         }
                     } else {
@@ -175,40 +175,40 @@ pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state:
     _ = input_interface.set_console_mode(terminal_state.console_mode);
 }
 
-fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
+fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvents {
     loop {
         match data.virtual_key_code {
-            virtual_keys::VK_RETURN => return TuiKeys::Enter,
-            virtual_keys::VK_LEFT => return TuiKeys::LeftArrow,
+            virtual_keys::VK_RETURN => return TuiEvents::Enter,
+            virtual_keys::VK_LEFT => return TuiEvents::LeftArrow,
 
-            virtual_keys::VK_UP => return TuiKeys::UpArrow,
+            virtual_keys::VK_UP => return TuiEvents::UpArrow,
 
-            virtual_keys::VK_RIGHT => return TuiKeys::RightArrow,
+            virtual_keys::VK_RIGHT => return TuiEvents::RightArrow,
 
-            virtual_keys::VK_DOWN => return TuiKeys::DownArrow,
+            virtual_keys::VK_DOWN => return TuiEvents::DownArrow,
 
             virtual_keys::VK_BACK => {
-                return TuiKeys::Backspace;
+                return TuiEvents::Backspace;
             }
 
             virtual_keys::VK_DELETE => {
-                return TuiKeys::Delete;
+                return TuiEvents::Delete;
             }
 
             virtual_keys::VK_SPACE => {
-                return TuiKeys::Space;
+                return TuiEvents::Space;
             }
 
             virtual_keys::VK_TAB => {
-                return TuiKeys::Tab;
+                return TuiEvents::Tab;
             }
 
             virtual_keys::VK_ESCAPE => {
-                return TuiKeys::Escape;
+                return TuiEvents::Escape;
             }
 
             virtual_keys::VK_SHIFT => {
-                return TuiKeys::Ignore;
+                return TuiEvents::Ignore;
             }
 
             _ => {
@@ -218,14 +218,14 @@ fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiKeys {
                 }
                 if let Some(character) = char_option {
                     match character as u32 {
-                        0x20..=0x7D => return TuiKeys::AsciiReadable(character),
-                        0 => return TuiKeys::Ignore,
-                        1..=26 => return TuiKeys::Control((character as u8 + 0x40) as char),
-                        0x1b => return TuiKeys::Escape,
-                        _ => return TuiKeys::Other(character),
+                        0x20..=0x7D => return TuiEvents::AsciiReadable(character),
+                        0 => return TuiEvents::Ignore,
+                        1..=26 => return TuiEvents::Control((character as u8 + 0x40) as char),
+                        0x1b => return TuiEvents::Escape,
+                        _ => return TuiEvents::Other(character),
                     }
                 } else {
-                    return TuiKeys::Error;
+                    return TuiEvents::Error;
                 }
             }
         }
