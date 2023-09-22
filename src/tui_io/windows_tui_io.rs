@@ -17,6 +17,8 @@ use windows::structs::{CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, HANDLE, 
 use windows::functions::{
     get_std_handle, GetConsoleMode, GetConsoleScreenBufferInfo, ReadConsoleInputW, SetConsoleMode,
 };
+
+use self::windows::constants::{ENABLE_EXTENDED_FLAGS, ENABLE_VIRTUAL_TERMINAL_INPUT};
 #[derive(Clone, Copy)]
 pub struct TerminalState {
     console_mode: CONSOLE_MODE,
@@ -162,7 +164,12 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
-    let new_mode: CONSOLE_MODE = CONSOLE_MODE(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
+    let new_mode: CONSOLE_MODE = CONSOLE_MODE(
+        ENABLE_EXTENDED_FLAGS
+            | ENABLE_MOUSE_INPUT
+            | ENABLE_WINDOW_INPUT
+            | ENABLE_VIRTUAL_TERMINAL_INPUT,
+    );
     _ = input_interface.set_console_mode(new_mode)?;
     return Some((
         input_interface,
