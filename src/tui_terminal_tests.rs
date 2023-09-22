@@ -1,10 +1,10 @@
 use crate::tui_terminal::TuiTerminal;
 
 fn get_center(tui_terminal: &mut TuiTerminal) -> Result<(u16, u16), String> {
-    let (x, y) = tui_terminal
-        .get_teminal_size()
-        .ok_or("Failed To Get Terminal Size")?;
-    return Ok((x / 2, y / 2));
+    match tui_terminal.get_teminal_size() {
+        Ok((x, y)) => return Ok((x / 2, y / 2)),
+        Err(_) => return Err("Failed To Get Terminal Size".to_string()),
+    }
 }
 
 #[allow(unused)]

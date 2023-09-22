@@ -99,6 +99,7 @@ fn feature_sample() -> Result<(), String> {
     loop {
         let (a, b): (u16, u16) = tui_terminal
             .get_teminal_size()
+            .ok()
             .ok_or("Failed To get Size")?;
         tui_terminal
             .println(String::new() + "Size: (" + &a.to_string() + ", " + &b.to_string() + ")");
@@ -176,6 +177,7 @@ fn draw_test() -> Result<(), String> {
     tui_terminal.set_cursor_position(1, 1);
     let (width, height) = tui_terminal
         .get_teminal_size()
+        .ok()
         .ok_or("Failed To Get Terminal Size")?;
     tui_terminal.set_cursor(CursorMode::Hidden);
     tui_terminal.set_cursor_position(width / 2, height / 2);

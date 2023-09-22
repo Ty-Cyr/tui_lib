@@ -153,7 +153,7 @@ pub struct OutputInterface {
 }
 
 impl OutputInterfaceT for OutputInterface {
-    fn get_size(&self) -> Option<(u16, u16)> {
+    fn get_size(&self) -> Result<(u16, u16), ()> {
         let mut window_size: Winsize = Winsize {
             ws_row: 0,
             ws_col: 0,
@@ -162,10 +162,10 @@ impl OutputInterfaceT for OutputInterface {
         };
         unsafe {
             if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {
-                return None;
+                return Err(());
             }
         }
-        return Some((window_size.ws_col as u16, window_size.ws_row as u16));
+        return Ok((window_size.ws_col as u16, window_size.ws_row as u16));
     }
 }
 
