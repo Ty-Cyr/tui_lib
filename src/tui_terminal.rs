@@ -415,12 +415,12 @@ impl TuiTerminal {
     }
 
     fn enable_mouse_events(&mut self) {
-        _ = self.output_interface.write("\x1b[?1000h".as_bytes());
+        _ = self.output_interface.write("\x1b[?1003h".as_bytes());
         _ = self.output_interface.flush();
     }
 
     fn disable_mouse_events(&mut self) {
-        _ = self.output_interface.write("\x1b[?1000l".as_bytes());
+        _ = self.output_interface.write("\x1b[?1003l".as_bytes());
         _ = self.output_interface.flush();
     }
 }

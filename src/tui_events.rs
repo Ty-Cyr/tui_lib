@@ -13,6 +13,9 @@ pub enum TuiEvents {
     AsciiReadable(char),
     Control(char),
     Other(char),
+    LeftClick(u16, u16),
+    RightClick(u16, u16),
+    MouseMove(u16, u16),
     Ignore,
     Error,
 }

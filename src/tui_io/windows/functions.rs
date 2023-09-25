@@ -12,6 +12,7 @@ extern "C" {
         hConsoleOutput: HANDLE,
         lpConsoleScreenBufferInfo: *mut CONSOLE_SCREEN_BUFFER_INFO,
     ) -> BOOL;
+    pub fn GetNumberOfConsoleInputEvents(hConsoleInput: HANDLE, numberOfEvents: *mut u32) -> BOOL;
 }
 
 mod inner_ffi {

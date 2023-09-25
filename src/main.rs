@@ -9,7 +9,7 @@ use tui_lib::{
 
 fn feature_sample() -> Result<(), String> {
     let mut tui_terminal: TuiTerminal =
-        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
+        TuiTerminal::new(TuiMode::Standard).ok_or("Failed To Setup Terminal".to_string())?;
     tui_terminal.set_background_color(Color::Black);
     tui_terminal.clear_screen();
     tui_terminal.set_cursor(CursorMode::Hidden);
@@ -140,6 +140,16 @@ fn feature_sample() -> Result<(), String> {
                 return Ok(());
             }
 
+            TuiEvents::Control('C') => {
+                tui_terminal.println(
+                    "CTRL-C"
+                        .set_bold(ThreeBool::True)
+                        .set_underlined(ThreeBool::True),
+                );
+                tui_terminal.println("Exiting");
+                return Ok(());
+            }
+
             TuiEvents::AsciiReadable(c) => {
                 tui_terminal.println(c.to_string());
             }
@@ -162,7 +172,7 @@ fn feature_sample() -> Result<(), String> {
             }
             _ => {
                 tui_terminal.println(
-                    "Failed To Get Keyboard Event"
+                    "Failed To Get Event"
                         .set_bold(ThreeBool::True)
                         .set_font_color(Color::Red),
                 );
