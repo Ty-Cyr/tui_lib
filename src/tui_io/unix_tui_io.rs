@@ -60,29 +60,8 @@ impl InputInterface {
         return (buffer[0] as u8) as char;
     }
 
-    fn try_read_char(&self) -> Option<char> {
-        let mut buffer: [c_char; 1] = [0];
-        unsafe {
-            fcntl(
-                self.input_fd.clone(),
-                F_SETFL,
-                fcntl(self.input_fd.clone(), F_GETFL) | O_NONBLOCK,
-            );
-            if 1 != c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) {
-                return None;
-            }
-            fcntl(
-                self.input_fd.clone(),
-                F_SETFL,
-                fcntl(self.input_fd.clone(), F_GETFL) & !O_NONBLOCK,
-            );
-        };
-
-        return Some((buffer[0] as u8) as char);
-    }
-
     fn handle_escape_input_s1(&self) -> TuiEvents {
-        let input_char_option: Option<char> = self.try_read_char();
+        let input_char_option: Option<char> = self.read_raw_immediate();
         match input_char_option {
             None => return TuiEvents::Escape,
             Some('[') => return self.handle_escape_input_s2(),
@@ -98,7 +77,7 @@ impl InputInterface {
             'C' => return TuiEvents::RightArrow,
             'D' => return TuiEvents::LeftArrow,
             '3' => {
-                if let Some('~') = self.try_read_char() {
+                if let Some('~') = self.read_raw_immediate() {
                     return TuiEvents::Delete;
                 }
                 return TuiEvents::Error;
@@ -145,6 +124,27 @@ impl InputInterfaceT for InputInterface {
 
     fn read_raw(&self) -> Option<char> {
         return Some(self.read_char());
+    }
+
+    fn read_raw_immediate(&self) -> Option<char> {
+        let mut buffer: [c_char; 1] = [0];
+        unsafe {
+            fcntl(
+                self.input_fd.clone(),
+                F_SETFL,
+                fcntl(self.input_fd.clone(), F_GETFL) | O_NONBLOCK,
+            );
+            if 1 != c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) {
+                return None;
+            }
+            fcntl(
+                self.input_fd.clone(),
+                F_SETFL,
+                fcntl(self.input_fd.clone(), F_GETFL) & !O_NONBLOCK,
+            );
+        };
+
+        return Some((buffer[0] as u8) as char);
     }
 }
 
