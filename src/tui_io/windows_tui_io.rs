@@ -135,16 +135,18 @@ pub struct OutputInterface {
 }
 
 impl OutputInterfaceT for OutputInterface {
-    fn get_size(&self) -> Option<(u16, u16)> {
+    fn get_size(&self) -> Result<(u16, u16), String> {
         let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
         unsafe {
-            let handle: HANDLE = get_std_handle(STD_OUTPUT_HANDLE).ok()?;
+            let handle: HANDLE = get_std_handle(STD_OUTPUT_HANDLE)
+                .ok()
+                .ok_or("Failed to Get HANDLE")?;
             if !GetConsoleScreenBufferInfo(handle, &mut screen_info_struct).as_bool() {
-                return None;
+                return Err("Unknown Error".into());
             }
         }
         let size: COORD = screen_info_struct.size;
-        return Some((size.x as u16, size.y as u16));
+        return Ok((size.x as u16, size.y as u16));
     }
 }
 
