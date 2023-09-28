@@ -1,9 +1,9 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum TuiMode {
     FullScreen,
     Standard,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Color {
     White,
     BrightWhite,
@@ -26,14 +26,14 @@ pub enum Color {
     Default,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum ThreeBool {
     True,
     False,
     Default,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum CursorMode {
     Default,
     BlinkingBlock,
@@ -45,7 +45,7 @@ pub enum CursorMode {
     Hidden,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum CursorNav {
     Up(u16),
     Down(u16),
