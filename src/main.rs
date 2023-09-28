@@ -136,8 +136,6 @@ fn feature_sample() -> Result<(), String> {
                         .set_bold(ThreeBool::True)
                         .set_underlined(ThreeBool::True),
                 );
-                // tui_terminal.println("Exiting");
-                // return Ok(());
             }
 
             TuiEvents::Control('C') => {
@@ -237,7 +235,9 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::Ignore => {}
+            TuiEvents::Ignore => {
+                tui_terminal.println("IGNORE".set_font_color(Color::Yellow));
+            }
             TuiEvents::Error => {
                 tui_terminal.println(
                     "Failed To Get Event"

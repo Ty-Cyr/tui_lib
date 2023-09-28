@@ -55,37 +55,49 @@ impl InputInterface {
 
     fn read_char(&self) -> char {
         let mut buffer: [c_char; 1] = [0];
-        unsafe { c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) };
+        unsafe {
+            let result = c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1);
+            if result == -1 {
+                println!("{}", get_errno_error());
+            }
+        };
 
         return (buffer[0] as u8) as char;
     }
 
     fn handle_escape_input_s1(&self) -> TuiEvents {
         let input_char_option: Option<char> = self.read_raw_immediate();
-        match input_char_option {
-            None => return TuiEvents::Escape,
-            Some('[') => return self.handle_escape_input_s2(),
-            Some(_) => return TuiEvents::Error,
+        let result = match input_char_option {
+            None => TuiEvents::Escape,
+            Some('[') => self.handle_escape_input_s2(),
+            Some(_) => TuiEvents::Error,
         };
+        match result {
+            TuiEvents::Error | TuiEvents::Ignore => loop {
+                if let None = self.read_raw_immediate() {
+                    return result;
+                };
+            },
+            _ => return result,
+        }
     }
 
     fn handle_escape_input_s2(&self) -> TuiEvents {
         let input_char: char = self.read_char();
-        match input_char {
-            'A' => return TuiEvents::UpArrow,
-            'B' => return TuiEvents::DownArrow,
-            'C' => return TuiEvents::RightArrow,
-            'D' => return TuiEvents::LeftArrow,
+        return match input_char {
+            'A' => TuiEvents::UpArrow,
+            'B' => TuiEvents::DownArrow,
+            'C' => TuiEvents::RightArrow,
+            'D' => TuiEvents::LeftArrow,
             '3' => {
                 if let Some('~') = self.read_raw_immediate() {
                     return TuiEvents::Delete;
                 }
-                return TuiEvents::Error;
+                TuiEvents::Error
             }
-            _ => {
-                return TuiEvents::Error;
-            }
-        }
+            '<' => TuiEvents::Ignore,
+            _ => TuiEvents::Error,
+        };
     }
 }
 
@@ -127,24 +139,43 @@ impl InputInterfaceT for InputInterface {
     }
 
     fn read_raw_immediate(&self) -> Option<char> {
+        let input_interface = NonBlockInputInterface::new(self.input_fd);
+        return input_interface.read_raw_immediate();
+    }
+}
+
+struct NonBlockInputInterface {
+    input_fd: i32,
+    fd_flags: i32,
+}
+
+impl NonBlockInputInterface {
+    fn new(input_fd: i32) -> NonBlockInputInterface {
+        let fd_flags;
+        unsafe {
+            fd_flags = fcntl(input_fd.clone(), F_GETFL);
+            fcntl(input_fd.clone(), F_SETFL, fd_flags | O_NONBLOCK)
+        };
+        return NonBlockInputInterface {
+            input_fd: input_fd,
+            fd_flags: fd_flags,
+        };
+    }
+    fn read_raw_immediate(&self) -> Option<char> {
         let mut buffer: [c_char; 1] = [0];
         unsafe {
-            fcntl(
-                self.input_fd.clone(),
-                F_SETFL,
-                fcntl(self.input_fd.clone(), F_GETFL) | O_NONBLOCK,
-            );
             if 1 != c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1) {
                 return None;
             }
-            fcntl(
-                self.input_fd.clone(),
-                F_SETFL,
-                fcntl(self.input_fd.clone(), F_GETFL) & !O_NONBLOCK,
-            );
         };
 
         return Some((buffer[0] as u8) as char);
+    }
+}
+
+impl Drop for NonBlockInputInterface {
+    fn drop(&mut self) {
+        unsafe { fcntl(self.input_fd.clone(), F_SETFL, self.fd_flags) };
     }
 }
 

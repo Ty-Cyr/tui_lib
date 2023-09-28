@@ -147,7 +147,7 @@ impl InputInterface {
         match self.read_raw_immediate() {
             Some('[') => {}
             Some(_) => loop {
-                let Some(_) = self.read_raw_immediate() else {
+                if let none = self.read_raw_immediate() {
                     return TuiEvents::Error;
                 };
             },
@@ -156,7 +156,7 @@ impl InputInterface {
 
         let Some('<') = self.read_raw_immediate() else {
             loop {
-                let Some(_) = self.read_raw_immediate() else {
+                if let None = self.read_raw_immediate() {
                     return TuiEvents::Error;
                 };
             }
@@ -183,14 +183,14 @@ impl InputInterface {
             Some('3') => self.handle_mouse_move_event(),
             Some('6') => self.handle_scroll_event(),
             None | Some(_) => loop {
-                let Some(_) = self.read_raw_immediate() else {
+                if let None = self.read_raw_immediate() {
                     return TuiEvents::Error;
                 };
             },
         };
         match result {
             TuiEvents::Error | TuiEvents::Ignore => loop {
-                let Some(_) = self.read_raw_immediate() else {
+                if let None = self.read_raw_immediate() {
                     return result;
                 };
             },
