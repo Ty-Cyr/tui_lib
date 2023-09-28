@@ -147,7 +147,7 @@ impl InputInterface {
         match self.read_raw_immediate() {
             Some('[') => {}
             Some(_) => loop {
-                if let none = self.read_raw_immediate() {
+                if let None = self.read_raw_immediate() {
                     return TuiEvents::Error;
                 };
             },
@@ -170,7 +170,7 @@ impl InputInterface {
             },
 
             Some('1') => match self.get_coordinates() {
-                Some((x, y, 'M')) => TuiEvents::MidddleClick(x, y),
+                Some((x, y, 'M')) => TuiEvents::MiddleClick(x, y),
                 Some((_, _, 'm')) => TuiEvents::Ignore,
                 Some(_) | None => TuiEvents::Error,
             },
