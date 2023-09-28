@@ -14,27 +14,33 @@ pub enum TuiEvents {
     Control(char),
     Other(char),
     LeftClick(u16, u16),
+    MidddleClick(u16, u16),
     RightClick(u16, u16),
     MouseMove(u16, u16),
+    LeftDrag(u16, u16),
+    MiddleDrag(u16, u16),
+    RightDrag(u16, u16),
+    ScrollUp(u16, u16),
+    ScrollDown(u16, u16),
     Ignore,
     Error,
 }
 
 impl TuiEvents {
-    pub fn eq_or_none(&self, expected: &TuiEvents) -> Option<()> {
-        if self == expected {
-            return Some(());
-        } else {
-            return None;
-        }
-    }
-    pub fn get_digit(&self) -> Option<u8> {
-        if let TuiEvents::AsciiReadable(value) = self {
-            match value.clone() as u8 {
-                0x30..=0x39 => return Some((value.clone() as u8) - 0x30),
-                _ => return None,
-            }
-        }
-        return None;
+    pub fn filter_no_mouse(self) -> TuiEvents {
+        return match self {
+            TuiEvents::LeftClick(_, _) => TuiEvents::Ignore,
+            TuiEvents::MidddleClick(_, _) => TuiEvents::Ignore,
+            TuiEvents::RightClick(_, _) => TuiEvents::Ignore,
+
+            TuiEvents::LeftDrag(_, _) => TuiEvents::Ignore,
+            TuiEvents::MiddleDrag(_, _) => TuiEvents::Ignore,
+            TuiEvents::RightDrag(_, _) => TuiEvents::Ignore,
+
+            TuiEvents::MouseMove(_, _) => TuiEvents::Ignore,
+            TuiEvents::ScrollUp(_, _) => TuiEvents::Ignore,
+            TuiEvents::ScrollDown(_, _) => TuiEvents::Ignore,
+            _ => self,
+        };
     }
 }

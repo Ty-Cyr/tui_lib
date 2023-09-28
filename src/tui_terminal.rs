@@ -198,7 +198,7 @@ impl TuiTerminal {
 
     pub fn get_cursor_position(&mut self) -> Result<(u16, u16), CursorPositionError> {
         use CursorPositionError::{IOError, OverflowError, TuiUnexpectedInputError};
-        _ = self.output_interface.write("\x1b[6n".as_bytes());
+        _ = self.output_interface.write(b"\x1b[6n");
         _ = self.output_interface.flush();
         let mut input = self.input_interface.read_raw().ok_or(IOError)?;
         if input != '\x1b' {
@@ -250,28 +250,24 @@ impl TuiTerminal {
     }
 
     fn send_cursor_code(&mut self) {
-        _ = self.output_interface.write("\x1b[?25h".as_bytes());
+        _ = self.output_interface.write(b"\x1b[?25h");
         match self.cursor_mode {
-            CursorMode::BlinkingBlock => _ = self.output_interface.write("\x1b[1\x20q".as_bytes()),
-            CursorMode::SteadyBlock => _ = self.output_interface.write("\x1b[2\x20q".as_bytes()),
-            CursorMode::BlinkingUnderline => {
-                _ = self.output_interface.write("\x1b[3\x20q".as_bytes())
-            }
-            CursorMode::StedayUnderline => {
-                _ = self.output_interface.write("\x1b[4\x20q".as_bytes())
-            }
-            CursorMode::BlinkingBar => _ = self.output_interface.write("\x1b[5\x20q".as_bytes()),
-            CursorMode::SteadyBar => _ = self.output_interface.write("\x1b[6\x20q".as_bytes()),
-            CursorMode::Hidden => _ = self.output_interface.write("\x1b[?25l".as_bytes()),
-            CursorMode::Default => _ = self.output_interface.write("\x1b[0\x20q".as_bytes()),
+            CursorMode::BlinkingBlock => _ = self.output_interface.write(b"\x1b[1\x20q"),
+            CursorMode::SteadyBlock => _ = self.output_interface.write(b"\x1b[2\x20q"),
+            CursorMode::BlinkingUnderline => _ = self.output_interface.write(b"\x1b[3\x20q"),
+            CursorMode::StedayUnderline => _ = self.output_interface.write(b"\x1b[4\x20q"),
+            CursorMode::BlinkingBar => _ = self.output_interface.write(b"\x1b[5\x20q"),
+            CursorMode::SteadyBar => _ = self.output_interface.write(b"\x1b[6\x20q"),
+            CursorMode::Hidden => _ = self.output_interface.write(b"\x1b[?25l"),
+            CursorMode::Default => _ = self.output_interface.write(b"\x1b[0\x20q"),
         }
         _ = self.output_interface.flush();
     }
 
     fn send_dec_line_code(&mut self, is_dec_line: bool) {
         match is_dec_line {
-            true => _ = self.output_interface.write("\x1b(0".as_bytes()),
-            false => _ = self.output_interface.write("\x1b(B".as_bytes()),
+            true => _ = self.output_interface.write(b"\x1b(0"),
+            false => _ = self.output_interface.write(b"\x1b(B"),
         }
     }
 
@@ -334,12 +330,12 @@ impl TuiTerminal {
     }
 
     pub fn save_cursor_position(&mut self) {
-        _ = self.output_interface.write("\x1b7".as_bytes());
+        _ = self.output_interface.write(b"\x1b7");
         _ = self.output_interface.flush();
     }
 
     pub fn restore_cursor_position(&mut self) {
-        _ = self.output_interface.write("\x1b8".as_bytes());
+        _ = self.output_interface.write(b"\x1b8");
         _ = self.output_interface.flush();
     }
 
@@ -350,7 +346,7 @@ impl TuiTerminal {
             self.send_font_settings(string_plus.get_font_settings());
             _ = self.output_interface.write(line.as_bytes());
             self.send_font_settings(&self.font_settings.clone());
-            _ = self.output_interface.write("\n".as_bytes());
+            _ = self.output_interface.write(b"\n");
         }
         _ = self.output_interface.flush();
     }
@@ -362,7 +358,7 @@ impl TuiTerminal {
         for line in string.split("\n") {
             self.send_font_settings(string_plus.get_font_settings());
             if line_number != 0 {
-                _ = self.output_interface.write("\n".as_bytes());
+                _ = self.output_interface.write(b"\n");
             }
             _ = self.output_interface.write(line.as_bytes());
             self.send_font_settings(&self.font_settings.clone());
@@ -372,22 +368,22 @@ impl TuiTerminal {
     }
 
     pub fn clear_screen(&mut self) {
-        _ = self.output_interface.write("\x1b[2J".as_bytes());
+        _ = self.output_interface.write(b"\x1b[2J");
         _ = self.output_interface.flush();
     }
 
     pub fn clear_end_line(&mut self) {
-        _ = self.output_interface.write("\x1b[0K".as_bytes());
+        _ = self.output_interface.write(b"\x1b[0K");
         _ = self.output_interface.flush();
     }
 
     pub fn clear_beginning_line(&mut self) {
-        _ = self.output_interface.write("\x1b[1K".as_bytes());
+        _ = self.output_interface.write(b"\x1b[1K");
         _ = self.output_interface.flush();
     }
 
     pub fn clear_line(&mut self) {
-        _ = self.output_interface.write("\x1b[2K".as_bytes());
+        _ = self.output_interface.write(b"\x1b[2K");
         _ = self.output_interface.flush();
     }
 
@@ -400,12 +396,12 @@ impl TuiTerminal {
     }
 
     fn alt_buffer(&mut self) {
-        _ = self.output_interface.write("\x1b[?1049h".as_bytes());
+        _ = self.output_interface.write(b"\x1b[?1049h");
         _ = self.output_interface.flush();
     }
 
     fn main_buffer(&mut self) {
-        _ = self.output_interface.write("\x1b[?1049l".as_bytes());
+        _ = self.output_interface.write(b"\x1b[?1049l");
         _ = self.output_interface.flush();
     }
 
@@ -416,11 +412,15 @@ impl TuiTerminal {
 
     fn enable_mouse_events(&mut self) {
         _ = self.output_interface.write("\x1b[?1003h".as_bytes());
+        _ = self.output_interface.write("\x1b[?1006h".as_bytes());
+        _ = self.output_interface.write("\x1b[?1015h".as_bytes());
         _ = self.output_interface.flush();
     }
 
     fn disable_mouse_events(&mut self) {
         _ = self.output_interface.write("\x1b[?1003l".as_bytes());
+        _ = self.output_interface.write("\x1b[?1006l".as_bytes());
+        _ = self.output_interface.write("\x1b[?1015l".as_bytes());
         _ = self.output_interface.flush();
     }
 }

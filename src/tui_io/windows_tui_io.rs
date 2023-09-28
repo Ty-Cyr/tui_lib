@@ -12,13 +12,16 @@ use windows::constants::{
     STD_OUTPUT_HANDLE,
 };
 
-use windows::structs::{CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, HANDLE, KEY_EVENT_RECORD};
-
-use windows::functions::{
-    get_std_handle, GetConsoleMode, GetConsoleScreenBufferInfo, ReadConsoleInputW, SetConsoleMode,
+use windows::{
+    constants::{ENABLE_EXTENDED_FLAGS, ENABLE_VIRTUAL_TERMINAL_INPUT},
+    functions::{
+        get_std_handle, GetConsoleMode, GetConsoleScreenBufferInfo, GetNumberOfConsoleInputEvents,
+        ReadConsoleInputW, SetConsoleMode,
+    },
+    structs::{CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, HANDLE, KEY_EVENT_RECORD},
 };
 
-use self::windows::constants::{ENABLE_EXTENDED_FLAGS, ENABLE_VIRTUAL_TERMINAL_INPUT};
+use self::windows::structs::INPUT_RECORD;
 #[derive(Clone, Copy)]
 pub struct TerminalState {
     console_mode: CONSOLE_MODE,
@@ -48,6 +51,207 @@ impl InputInterface {
         _ = self.get_console_mode();
         return Some(());
     }
+
+    fn is_event_ready(&self) -> Option<bool> {
+        let mut count = 0;
+        unsafe {
+            if !GetNumberOfConsoleInputEvents(self.input_handle, &mut count).as_bool() {
+                return None;
+            }
+        }
+        return Some(count > 0);
+    }
+
+    fn get_event(&self) -> Result<INPUT_RECORD, String> {
+        let event = &mut INPUT_RECORD::default();
+        let mut event_count = 0;
+        unsafe {
+            if !ReadConsoleInputW(self.input_handle.clone(), event, 1, &mut event_count).as_bool() {
+                return Err("Failed To Get Event".into());
+            }
+        }
+        return Ok(*event);
+    }
+
+    fn get_u16(&self) -> Option<(u16, char)> {
+        let mut num = 0;
+        loop {
+            let next = self.read_raw_immediate()?;
+            match next as u16 {
+                0x30..=0x39 => {
+                    let digit = next as u16 - 0x30;
+                    if num > u16::MAX {
+                        return None;
+                    }
+                    num *= 10;
+                    if digit > u16::MAX - num {
+                        return None;
+                    }
+                    num += digit;
+                }
+                _ => return Some((num, next)),
+            }
+        }
+    }
+
+    fn get_coordinates(&self) -> Option<(u16, u16, char)> {
+        let Some(';') = self.read_raw_immediate() else {
+            return None;
+        };
+        let Some((x, ';')) = self.get_u16() else {
+            return None;
+        };
+        return match self.get_u16() {
+            Some((y, c)) => Some((x, y, c)),
+            None => None,
+        };
+    }
+
+    fn handle_scroll_event(&self) -> TuiEvents {
+        return match self.read_raw_immediate() {
+            Some('4') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::ScrollUp(x, y),
+                None | Some(_) => TuiEvents::Error,
+            },
+            Some('5') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::ScrollDown(x, y),
+                None | Some(_) => TuiEvents::Error,
+            },
+            None | Some(_) => TuiEvents::Error,
+        };
+    }
+
+    fn handle_mouse_move_event(&self) -> TuiEvents {
+        return match self.read_raw_immediate() {
+            Some('2') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::LeftDrag(x, y),
+                Some(_) | None => TuiEvents::Error,
+            },
+            Some('3') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::MiddleDrag(x, y),
+                Some(_) | None => TuiEvents::Error,
+            },
+            Some('4') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::RightDrag(x, y),
+                Some(_) | None => TuiEvents::Error,
+            },
+            Some('5') => match self.get_coordinates() {
+                Some((x, y, 'm')) => TuiEvents::MouseMove(x, y),
+                Some(_) | None => TuiEvents::Error,
+            },
+            None | Some(_) => TuiEvents::Error,
+        };
+    }
+
+    fn handle_escape_sequence(&self) -> TuiEvents {
+        match self.read_raw_immediate() {
+            Some('[') => {}
+            Some(_) => loop {
+                let Some(_) = self.read_raw_immediate() else {
+                    return TuiEvents::Error;
+                };
+            },
+            None => return TuiEvents::Escape,
+        }
+
+        let Some('<') = self.read_raw_immediate() else {
+            loop {
+                let Some(_) = self.read_raw_immediate() else {
+                    return TuiEvents::Error;
+                };
+            }
+        };
+
+        let result = match self.read_raw_immediate() {
+            Some('0') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::LeftClick(x, y),
+                Some((_, _, 'm')) => TuiEvents::Ignore,
+                Some(_) | None => TuiEvents::Error,
+            },
+
+            Some('1') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::MidddleClick(x, y),
+                Some((_, _, 'm')) => TuiEvents::Ignore,
+                Some(_) | None => TuiEvents::Error,
+            },
+
+            Some('2') => match self.get_coordinates() {
+                Some((x, y, 'M')) => TuiEvents::RightClick(x, y),
+                Some((_, _, 'm')) => TuiEvents::Ignore,
+                Some(_) | None => TuiEvents::Error,
+            },
+            Some('3') => self.handle_mouse_move_event(),
+            Some('6') => self.handle_scroll_event(),
+            None | Some(_) => loop {
+                let Some(_) = self.read_raw_immediate() else {
+                    return TuiEvents::Error;
+                };
+            },
+        };
+        match result {
+            TuiEvents::Error | TuiEvents::Ignore => loop {
+                let Some(_) = self.read_raw_immediate() else {
+                    return result;
+                };
+            },
+            _ => return result,
+        };
+    }
+
+    fn parse_key_event_data(&self, data: KEY_EVENT_RECORD) -> TuiEvents {
+        loop {
+            match data.virtual_key_code {
+                virtual_keys::VK_RETURN => return TuiEvents::Enter,
+                virtual_keys::VK_LEFT => return TuiEvents::LeftArrow,
+
+                virtual_keys::VK_UP => return TuiEvents::UpArrow,
+
+                virtual_keys::VK_RIGHT => return TuiEvents::RightArrow,
+
+                virtual_keys::VK_DOWN => return TuiEvents::DownArrow,
+
+                virtual_keys::VK_BACK => {
+                    return TuiEvents::Backspace;
+                }
+
+                virtual_keys::VK_DELETE => {
+                    return TuiEvents::Delete;
+                }
+
+                virtual_keys::VK_SPACE => {
+                    return TuiEvents::Space;
+                }
+
+                virtual_keys::VK_TAB => {
+                    return TuiEvents::Tab;
+                }
+
+                virtual_keys::VK_ESCAPE => return self.handle_escape_sequence(),
+
+                virtual_keys::VK_SHIFT => {
+                    return TuiEvents::Ignore;
+                }
+
+                _ => {
+                    let char_option: Option<char>;
+                    unsafe {
+                        char_option = char::from_u32(data.u_char.unicode_char as u32);
+                    }
+                    if let Some(character) = char_option {
+                        match character as u32 {
+                            0x20..=0x7D => return TuiEvents::AsciiReadable(character),
+                            0 => return TuiEvents::Ignore,
+                            1..=26 => return TuiEvents::Control((character as u8 + 0x40) as char),
+                            0x1b => return self.handle_escape_sequence(),
+                            _ => return TuiEvents::Other(character),
+                        }
+                    } else {
+                        return TuiEvents::Error;
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl InputInterfaceT for InputInterface {
@@ -62,26 +266,15 @@ impl InputInterfaceT for InputInterface {
 
     fn read_parsed(&self) -> TuiEvents {
         loop {
-            let lpbuffer = [&mut Default::default()];
-            let mut event_count: u32 = 0;
-            unsafe {
-                if !ReadConsoleInputW(
-                    self.input_handle.clone(),
-                    lpbuffer[0],
-                    lpbuffer.len() as u32,
-                    &mut event_count,
-                )
-                .as_bool()
-                {
-                    return TuiEvents::Error;
-                }
-            }
-            match lpbuffer[0].event_type as u32 {
+            let Ok(event) = self.get_event() else {
+                return TuiEvents::Error;
+            };
+            match event.event_type as u32 {
                 KEY_EVENT => {
                     let key_event_data: KEY_EVENT_RECORD;
-                    unsafe { key_event_data = lpbuffer[0].event.key_event }
+                    unsafe { key_event_data = event.event.key_event }
                     if key_event_data.key_down.as_bool() {
-                        let event: TuiEvents = parse_key_event_data(key_event_data);
+                        let event: TuiEvents = self.parse_key_event_data(key_event_data);
                         match event {
                             TuiEvents::Ignore => continue,
                             _ => return event,
@@ -97,24 +290,36 @@ impl InputInterfaceT for InputInterface {
 
     fn read_raw(&self) -> Option<char> {
         loop {
-            let lpbuffer = [&mut Default::default()];
-            let mut event_count: u32 = 0;
-            unsafe {
-                let result = ReadConsoleInputW(
-                    self.input_handle.clone(),
-                    lpbuffer[0],
-                    lpbuffer.len() as u32,
-                    &mut event_count,
-                );
-                if !result.as_bool() {
-                    println!("HERE");
-                    return None;
-                }
-            }
-            match lpbuffer[0].event_type as u32 {
+            let event = self.get_event().ok()?;
+            match event.event_type as u32 {
                 KEY_EVENT => {
                     let key_event_data: KEY_EVENT_RECORD;
-                    unsafe { key_event_data = lpbuffer[0].event.key_event }
+                    unsafe { key_event_data = event.event.key_event }
+                    if key_event_data.key_down.as_bool() {
+                        let result: char;
+                        unsafe {
+                            result = key_event_data.u_char.ascii_char.try_into().ok()?;
+                        }
+                        return Some(result);
+                    } else {
+                        continue;
+                    }
+                }
+                _ => continue,
+            }
+        }
+    }
+
+    fn read_raw_immediate(&self) -> Option<char> {
+        loop {
+            if !self.is_event_ready()? {
+                return None;
+            }
+            let event = self.get_event().ok()?;
+            match event.event_type as u32 {
+                KEY_EVENT => {
+                    let key_event_data: KEY_EVENT_RECORD;
+                    unsafe { key_event_data = event.event.key_event }
                     if key_event_data.key_down.as_bool() {
                         let result: char;
                         unsafe {
@@ -182,61 +387,4 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
     _ = input_interface.set_console_mode(terminal_state.console_mode);
-}
-
-fn parse_key_event_data(data: KEY_EVENT_RECORD) -> TuiEvents {
-    loop {
-        match data.virtual_key_code {
-            virtual_keys::VK_RETURN => return TuiEvents::Enter,
-            virtual_keys::VK_LEFT => return TuiEvents::LeftArrow,
-
-            virtual_keys::VK_UP => return TuiEvents::UpArrow,
-
-            virtual_keys::VK_RIGHT => return TuiEvents::RightArrow,
-
-            virtual_keys::VK_DOWN => return TuiEvents::DownArrow,
-
-            virtual_keys::VK_BACK => {
-                return TuiEvents::Backspace;
-            }
-
-            virtual_keys::VK_DELETE => {
-                return TuiEvents::Delete;
-            }
-
-            virtual_keys::VK_SPACE => {
-                return TuiEvents::Space;
-            }
-
-            virtual_keys::VK_TAB => {
-                return TuiEvents::Tab;
-            }
-
-            virtual_keys::VK_ESCAPE => {
-                return TuiEvents::Escape;
-            }
-
-            virtual_keys::VK_SHIFT => {
-                return TuiEvents::Ignore;
-            }
-
-            _ => {
-                let char_option: Option<char>;
-                unsafe {
-                    char_option = char::from_u32(data.u_char.unicode_char as u32);
-                }
-                if let Some(character) = char_option {
-                    match character as u32 {
-                        0x20..=0x7D => return TuiEvents::AsciiReadable(character),
-                        0 => return TuiEvents::Ignore,
-                        1..=26 => return TuiEvents::Control((character as u8 + 0x40) as char),
-                        0x1b => return TuiEvents::Escape,
-                        _ => return TuiEvents::Other(character),
-                    }
-                } else {
-                    return TuiEvents::Error;
-                }
-            }
-        }
-    }
 }
