@@ -177,7 +177,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
 
-            TuiEvents::MidddleClick(x, y) => {
+            TuiEvents::MiddleClick(x, y) => {
                 tui_terminal.print("MIDDLECLICK: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
@@ -235,9 +235,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::Ignore => {
-                tui_terminal.println("IGNORE".set_font_color(Color::Yellow));
-            }
+            TuiEvents::Ignore => {}
             TuiEvents::Error => {
                 tui_terminal.println(
                     "Failed To Get Event"

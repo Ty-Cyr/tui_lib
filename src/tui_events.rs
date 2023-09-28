@@ -14,7 +14,7 @@ pub enum TuiEvents {
     Control(char),
     Other(char),
     LeftClick(u16, u16),
-    MidddleClick(u16, u16),
+    MiddleClick(u16, u16),
     RightClick(u16, u16),
     MouseMove(u16, u16),
     LeftDrag(u16, u16),
@@ -30,7 +30,7 @@ impl TuiEvents {
     pub fn filter_no_mouse(self) -> TuiEvents {
         return match self {
             TuiEvents::LeftClick(_, _) => TuiEvents::Ignore,
-            TuiEvents::MidddleClick(_, _) => TuiEvents::Ignore,
+            TuiEvents::MiddleClick(_, _) => TuiEvents::Ignore,
             TuiEvents::RightClick(_, _) => TuiEvents::Ignore,
 
             TuiEvents::LeftDrag(_, _) => TuiEvents::Ignore,
