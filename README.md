@@ -6,7 +6,10 @@ This project, sets up an interface to interact with the terminal. It is supposed
 
 ## Usage
 
-Create a tui_terminal while remaining in main buffer.
+\*Never Create two simeltaneous copies of a TuiTerminal. The program will block on the creation of the second due to a mutex.
+
+- Always create the instance of TuiTerminal as mutable. Most methods require a mutable reference.
+  Create a tui_terminal while remaining in main buffer.
 
 ```rust
     let mut tui_terminal = TuiTerminal(TuiMode::Standard);
