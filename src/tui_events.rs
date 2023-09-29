@@ -27,7 +27,7 @@ pub enum TuiEvents {
 }
 
 impl TuiEvents {
-    pub fn filter_no_mouse(self) -> TuiEvents {
+    pub fn filter_keyboard_events(self) -> TuiEvents {
         return match self {
             TuiEvents::LeftClick(_, _) => TuiEvents::Ignore,
             TuiEvents::MiddleClick(_, _) => TuiEvents::Ignore,
