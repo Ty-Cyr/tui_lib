@@ -1,6 +1,6 @@
 use crate::{font_settings::FontSettings, Color, ThreeBool};
 
-pub enum DecLine {
+pub enum DecCharSet {
     TopLeft,
     HorizontalBar,
     TopMiddle,
@@ -13,25 +13,31 @@ pub enum DecLine {
     BottomMiddle,
     BottomRight,
     Block,
+    LessEqual,
+    GreaterEqual,
+    NotEqual,
     Other(char),
 }
 
-impl DecLine {
+impl DecCharSet {
     fn get_code(&self) -> String {
         return match self {
-            &DecLine::TopLeft => '\x6c',
-            &DecLine::TopMiddle => '\x77',
-            &DecLine::TopRight => '\x6b',
-            &DecLine::MiddleLeft => '\x74',
-            &DecLine::MiddleMiddle => '\x6e',
-            &DecLine::MiddleRight => '\x75',
-            &DecLine::BottomLeft => '\x6d',
-            &DecLine::BottomMiddle => '\x76',
-            &DecLine::BottomRight => '\x6a',
-            &DecLine::VerticalBar => '\x78',
-            &DecLine::HorizontalBar => '\x71',
-            &DecLine::Block => '\x61',
-            &DecLine::Other(code) => code,
+            &DecCharSet::TopLeft => '\x6c',
+            &DecCharSet::TopMiddle => '\x77',
+            &DecCharSet::TopRight => '\x6b',
+            &DecCharSet::MiddleLeft => '\x74',
+            &DecCharSet::MiddleMiddle => '\x6e',
+            &DecCharSet::MiddleRight => '\x75',
+            &DecCharSet::BottomLeft => '\x6d',
+            &DecCharSet::BottomMiddle => '\x76',
+            &DecCharSet::BottomRight => '\x6a',
+            &DecCharSet::VerticalBar => '\x78',
+            &DecCharSet::HorizontalBar => '\x71',
+            &DecCharSet::Block => '\x61',
+            &DecCharSet::LessEqual => '\x79',
+            &DecCharSet::GreaterEqual => '\x7a',
+            &DecCharSet::NotEqual => '\x7c',
+            &DecCharSet::Other(code) => code,
         }
         .into();
     }
@@ -171,8 +177,8 @@ impl From<String> for StringPlus {
     }
 }
 
-impl From<DecLine> for StringPlus {
-    fn from(dec_line: DecLine) -> StringPlus {
+impl From<DecCharSet> for StringPlus {
+    fn from(dec_line: DecCharSet) -> StringPlus {
         let mut font_settings: FontSettings = FontSettings::default();
         font_settings.is_dec_line = true;
         return StringPlus {

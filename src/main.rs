@@ -1,6 +1,6 @@
 use std::env;
 use tui_lib::{
-    string_plus::{AsSp, DecLine, StringPlusTrait},
+    string_plus::{AsSp, DecCharSet, StringPlusTrait},
     tui_enums::ThreeBool,
     tui_enums::{Color, CursorMode, TuiMode},
     tui_events::TuiEvents,
@@ -61,18 +61,18 @@ fn feature_sample() -> Result<(), String> {
     );
     tui_terminal.println("Bright Black".set_background_color(Color::BrightBlack));
 
-    tui_terminal.print(DecLine::TopLeft);
-    tui_terminal.print(DecLine::TopMiddle);
-    tui_terminal.print(DecLine::TopMiddle);
-    tui_terminal.println(DecLine::TopRight);
-    tui_terminal.print(DecLine::MiddleLeft);
-    tui_terminal.print(DecLine::MiddleMiddle);
-    tui_terminal.print(DecLine::MiddleMiddle);
-    tui_terminal.println(DecLine::MiddleRight);
-    tui_terminal.print(DecLine::BottomLeft);
-    tui_terminal.print(DecLine::BottomMiddle);
-    tui_terminal.print(DecLine::BottomMiddle);
-    tui_terminal.println(DecLine::BottomRight);
+    tui_terminal.print(DecCharSet::TopLeft);
+    tui_terminal.print(DecCharSet::TopMiddle);
+    tui_terminal.print(DecCharSet::TopMiddle);
+    tui_terminal.println(DecCharSet::TopRight);
+    tui_terminal.print(DecCharSet::MiddleLeft);
+    tui_terminal.print(DecCharSet::MiddleMiddle);
+    tui_terminal.print(DecCharSet::MiddleMiddle);
+    tui_terminal.println(DecCharSet::MiddleRight);
+    tui_terminal.print(DecCharSet::BottomLeft);
+    tui_terminal.print(DecCharSet::BottomMiddle);
+    tui_terminal.print(DecCharSet::BottomMiddle);
+    tui_terminal.println(DecCharSet::BottomRight);
 
     tui_terminal.println(
         "blinking\nlines"
@@ -81,7 +81,7 @@ fn feature_sample() -> Result<(), String> {
     );
     tui_terminal.println("Italics".set_italics(ThreeBool::True));
     tui_terminal.println(
-        DecLine::Block
+        DecCharSet::Block
             .set_font_color(Color::Red)
             .set_blinking(ThreeBool::True),
     );
@@ -153,15 +153,15 @@ fn feature_sample() -> Result<(), String> {
             }
 
             TuiEvents::Control(c) => {
-                tui_terminal.print(DecLine::TopLeft);
-                tui_terminal.print(DecLine::HorizontalBar);
-                tui_terminal.println(DecLine::TopRight);
-                tui_terminal.print(DecLine::VerticalBar);
+                tui_terminal.print(DecCharSet::TopLeft);
+                tui_terminal.print(DecCharSet::HorizontalBar);
+                tui_terminal.println(DecCharSet::TopRight);
+                tui_terminal.print(DecCharSet::VerticalBar);
                 tui_terminal.print(c);
-                tui_terminal.println(DecLine::VerticalBar);
-                tui_terminal.print(DecLine::BottomLeft);
-                tui_terminal.print(DecLine::HorizontalBar);
-                tui_terminal.println(DecLine::BottomRight);
+                tui_terminal.println(DecCharSet::VerticalBar);
+                tui_terminal.print(DecCharSet::BottomLeft);
+                tui_terminal.print(DecCharSet::HorizontalBar);
+                tui_terminal.println(DecCharSet::BottomRight);
             }
 
             TuiEvents::Other(c) => {
@@ -257,11 +257,15 @@ fn draw_test() -> Result<(), String> {
         .ok_or("Failed To Get Terminal Size")?;
     tui_terminal.set_cursor(CursorMode::Hidden);
     tui_terminal.set_cursor_position(width / 2, height / 2);
-    tui_terminal.print(
-        DecLine::MiddleMiddle
+    tui_terminal.println(
+        DecCharSet::MiddleMiddle
             .set_blinking(ThreeBool::True)
             .set_font_color(Color::Magenta),
     );
+    tui_terminal.print(DecCharSet::LessEqual);
+    tui_terminal.print("=");
+    tui_terminal.print(DecCharSet::NotEqual);
+    tui_terminal.print(DecCharSet::GreaterEqual);
     loop {
         let event = tui_terminal.get_event();
         match event {
