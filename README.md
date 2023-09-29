@@ -25,6 +25,6 @@ Create a tui_terminal while switching to alternate buffer.
 
 When writing tests for this library be sure to ensure the tests are running on a single thread. Some functions rely on coordinated input and output. Rust's parrellel tests can create race conditions that throw off the results.
 
-## Feature Request
-
 ## Bug Reports
+
+If you find an issue do not hesitate to report it.
