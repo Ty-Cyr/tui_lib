@@ -52,6 +52,7 @@ impl TuiTerminal {
         }
         return Some(tui_terminal);
     }
+
     fn get_font_color_code(&mut self, mut color: Color) -> String {
         if let Color::Default = color {
             color = self.font_settings.font_color;
