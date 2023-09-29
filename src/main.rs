@@ -169,7 +169,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println("Key-U8: ".to_string() + &(c as u8).to_string());
             }
 
-            TuiEvents::LeftClick(x, y) => {
+            TuiEvents::LeftClick((x, y)) => {
                 tui_terminal.print("LEFTCLICK: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
@@ -177,7 +177,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
 
-            TuiEvents::MiddleClick(x, y) => {
+            TuiEvents::MiddleClick((x, y)) => {
                 tui_terminal.print("MIDDLECLICK: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
@@ -185,42 +185,42 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
 
-            TuiEvents::RightClick(x, y) => {
+            TuiEvents::RightClick((x, y)) => {
                 tui_terminal.print("RIGHTCLICK: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::MouseMove(x, y) => {
+            TuiEvents::MouseMove((x, y)) => {
                 tui_terminal.print("MOUSE MOVE: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::LeftDrag(x, y) => {
+            TuiEvents::LeftDrag((x, y)) => {
                 tui_terminal.print("LEFT DRAG: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::MiddleDrag(x, y) => {
+            TuiEvents::MiddleDrag((x, y)) => {
                 tui_terminal.print("MIDDLE DRAG: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::RightDrag(x, y) => {
+            TuiEvents::RightDrag((x, y)) => {
                 tui_terminal.print("RIGHT DRAG: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
                 tui_terminal.print(y.as_sp().set_background_color(Color::Blue));
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
-            TuiEvents::ScrollUp(x, y) => {
+            TuiEvents::ScrollUp((x, y)) => {
                 tui_terminal.print("SROLL UP: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));
@@ -228,7 +228,7 @@ fn feature_sample() -> Result<(), String> {
                 tui_terminal.println(")".set_background_color(Color::Blue));
             }
 
-            TuiEvents::ScrollDown(x, y) => {
+            TuiEvents::ScrollDown((x, y)) => {
                 tui_terminal.print("SROLL Down: (".set_background_color(Color::Blue));
                 tui_terminal.print(x.as_sp().set_background_color(Color::Blue));
                 tui_terminal.print(", ".set_background_color(Color::Blue));

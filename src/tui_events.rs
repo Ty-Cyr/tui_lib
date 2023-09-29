@@ -13,15 +13,15 @@ pub enum TuiEvents {
     AsciiReadable(char),
     Control(char),
     Other(char),
-    LeftClick(u16, u16),
-    MiddleClick(u16, u16),
-    RightClick(u16, u16),
-    MouseMove(u16, u16),
-    LeftDrag(u16, u16),
-    MiddleDrag(u16, u16),
-    RightDrag(u16, u16),
-    ScrollUp(u16, u16),
-    ScrollDown(u16, u16),
+    LeftClick((u16, u16)),
+    MiddleClick((u16, u16)),
+    RightClick((u16, u16)),
+    MouseMove((u16, u16)),
+    LeftDrag((u16, u16)),
+    MiddleDrag((u16, u16)),
+    RightDrag((u16, u16)),
+    ScrollUp((u16, u16)),
+    ScrollDown((u16, u16)),
     Ignore,
     Error,
 }
@@ -29,17 +29,17 @@ pub enum TuiEvents {
 impl TuiEvents {
     pub fn filter_keyboard_events(self) -> TuiEvents {
         return match self {
-            TuiEvents::LeftClick(_, _) => TuiEvents::Ignore,
-            TuiEvents::MiddleClick(_, _) => TuiEvents::Ignore,
-            TuiEvents::RightClick(_, _) => TuiEvents::Ignore,
+            TuiEvents::LeftClick(_) => TuiEvents::Ignore,
+            TuiEvents::MiddleClick(_) => TuiEvents::Ignore,
+            TuiEvents::RightClick(_) => TuiEvents::Ignore,
 
-            TuiEvents::LeftDrag(_, _) => TuiEvents::Ignore,
-            TuiEvents::MiddleDrag(_, _) => TuiEvents::Ignore,
-            TuiEvents::RightDrag(_, _) => TuiEvents::Ignore,
+            TuiEvents::LeftDrag(_) => TuiEvents::Ignore,
+            TuiEvents::MiddleDrag(_) => TuiEvents::Ignore,
+            TuiEvents::RightDrag(_) => TuiEvents::Ignore,
 
-            TuiEvents::MouseMove(_, _) => TuiEvents::Ignore,
-            TuiEvents::ScrollUp(_, _) => TuiEvents::Ignore,
-            TuiEvents::ScrollDown(_, _) => TuiEvents::Ignore,
+            TuiEvents::MouseMove(_) => TuiEvents::Ignore,
+            TuiEvents::ScrollUp(_) => TuiEvents::Ignore,
+            TuiEvents::ScrollDown(_) => TuiEvents::Ignore,
             _ => self,
         };
     }
