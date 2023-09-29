@@ -57,10 +57,7 @@ impl InputInterface {
     fn read_char(&self) -> char {
         let mut buffer: [c_char; 1] = [0];
         unsafe {
-            let result = c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1);
-            if result == -1 {
-                println!("{}", get_errno_error());
-            }
+            c_read(self.input_fd.clone(), buffer.as_mut_ptr() as *mut c_void, 1);
         };
 
         return (buffer[0] as u8) as char;
