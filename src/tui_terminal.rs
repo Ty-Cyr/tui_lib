@@ -89,7 +89,7 @@ impl TuiTerminal {
             }
             Color::Default => "39",
         }
-        .to_string();
+        .into();
     }
 
     fn get_background_color_code(&mut self, mut color: Color) -> String {
@@ -129,7 +129,7 @@ impl TuiTerminal {
             }
             Color::Default => "49",
         }
-        .to_string();
+        .into();
     }
 
     fn get_bold_code(&mut self, mut is_bold: ThreeBool) -> &str {
