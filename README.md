@@ -4,7 +4,11 @@
 
 This project, sets up an interface to interact with the terminal. It is supposed to work on Windows, Linux, and Macos.
 
-`let x = y;`
+## Usage
+
+```rust
+    let mut tui_terminal = TuiTerminal(TuiMode::Standard);
+```
 
 ## Testing
 
