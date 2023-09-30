@@ -7,7 +7,6 @@ fn get_center(tui_terminal: &mut TuiTerminal) -> Result<(u16, u16), String> {
     }
 }
 
-#[allow(unused)]
 #[test]
 fn test_set_cursor_position() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -19,12 +18,11 @@ fn test_set_cursor_position() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_restore_cursor_position() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -47,7 +45,6 @@ fn test_restore_cursor_position() -> Result<(), String> {
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_next() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -63,12 +60,11 @@ fn test_shift_cursor_next() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_previous() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -84,12 +80,11 @@ fn test_shift_cursor_previous() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_forwards() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -104,12 +99,11 @@ fn test_shift_cursor_forwards() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_backwards() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -124,12 +118,11 @@ fn test_shift_cursor_backwards() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_up() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -144,12 +137,11 @@ fn test_shift_cursor_up() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
 
-#[allow(unused)]
 #[test]
 fn test_shift_cursor_down() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
@@ -164,7 +156,7 @@ fn test_shift_cursor_down() -> Result<(), String> {
 
     return match position {
         Ok(coordinates) if coordinates == (x, y) => Ok(()),
-        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
 }
