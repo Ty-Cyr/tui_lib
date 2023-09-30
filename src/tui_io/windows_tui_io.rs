@@ -1,4 +1,7 @@
-use std::io::{stdout, Stdout, Write};
+use std::{
+    error::Error,
+    io::{stdout, Stdout, Write},
+};
 
 mod windows;
 
@@ -25,7 +28,7 @@ use windows::{
     structs::{CONSOLE_MODE, CONSOLE_SCREEN_BUFFER_INFO, COORD, HANDLE, KEY_EVENT_RECORD},
 };
 
-use self::windows::structs::INPUT_RECORD;
+use self::windows::{functions::get_c_error, structs::INPUT_RECORD};
 
 #[derive(Clone, Copy)]
 pub struct TerminalState {
@@ -38,23 +41,23 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    fn get_console_mode(&self) -> Option<CONSOLE_MODE> {
+    fn get_console_mode(&self) -> Result<CONSOLE_MODE, CError> {
         let mut console_mode: CONSOLE_MODE = Default::default();
         unsafe {
             if !GetConsoleMode(self.input_handle.clone(), &mut console_mode).as_bool() {
-                return None;
+                return Err(get_c_error().to_string().into());
             }
         }
-        return Some(console_mode);
+        return Ok(console_mode);
     }
-    fn set_console_mode(&self, console_mode: CONSOLE_MODE) -> Option<()> {
+    fn set_console_mode(&self, console_mode: CONSOLE_MODE) -> Result<(), CError> {
         unsafe {
             if !SetConsoleMode(self.input_handle.clone(), console_mode).as_bool() {
-                return None;
+                return Err(get_c_error().to_string().into());
             }
         }
         _ = self.get_console_mode();
-        return Some(());
+        return Ok(());
     }
 
     fn is_event_ready(&self) -> Option<bool> {
@@ -167,13 +170,13 @@ impl InputInterface {
 impl MouseInput for InputInterface {}
 
 impl InputInterfaceT for InputInterface {
-    fn new() -> Option<InputInterface> {
+    fn new() -> Result<InputInterface, Box<dyn Error>> {
         let input_interface;
         unsafe {
-            let input_handle: HANDLE = get_std_handle(STD_INPUT_HANDLE).ok()?;
+            let input_handle: HANDLE = get_std_handle(STD_INPUT_HANDLE)?;
             input_interface = InputInterface { input_handle };
         }
-        return Some(input_interface);
+        return Ok(input_interface);
     }
 
     fn read_parsed(&self) -> TuiEvents {
@@ -278,8 +281,8 @@ impl Write for OutputInterface {
 }
 
 pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
-    let input_interface: InputInterface = InputInterface::new()?;
-    let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
+    let input_interface: InputInterface = InputInterface::new().ok()?;
+    let console_mode: CONSOLE_MODE = input_interface.get_console_mode().ok()?;
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
@@ -289,7 +292,7 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
             | ENABLE_WINDOW_INPUT
             | ENABLE_VIRTUAL_TERMINAL_INPUT,
     );
-    _ = input_interface.set_console_mode(new_mode)?;
+    _ = input_interface.set_console_mode(new_mode).ok()?;
     return Some((
         input_interface,
         output_interface,

@@ -4,7 +4,13 @@ use std::{error::Error, fmt::Display};
 pub struct CError {
     pub error_string: String,
 }
-
+impl From<String> for CError {
+    fn from(value: String) -> CError {
+        return CError {
+            error_string: value,
+        };
+    }
+}
 impl From<&str> for CError {
     fn from(value: &str) -> CError {
         return CError {
