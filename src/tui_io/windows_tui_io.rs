@@ -280,9 +280,10 @@ impl Write for OutputInterface {
     }
 }
 
-pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
-    let input_interface: InputInterface = InputInterface::new().ok()?;
-    let console_mode: CONSOLE_MODE = input_interface.get_console_mode().ok()?;
+pub fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
+{
+    let input_interface: InputInterface = InputInterface::new()?;
+    let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
@@ -292,8 +293,8 @@ pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalStat
             | ENABLE_WINDOW_INPUT
             | ENABLE_VIRTUAL_TERMINAL_INPUT,
     );
-    _ = input_interface.set_console_mode(new_mode).ok()?;
-    return Some((
+    _ = input_interface.set_console_mode(new_mode)?;
+    return Ok((
         input_interface,
         output_interface,
         TerminalState { console_mode },
