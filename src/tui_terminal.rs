@@ -1,4 +1,5 @@
 use std::{
+    error::Error,
     io::Write,
     sync::{Mutex, MutexGuard},
 };
@@ -8,7 +9,7 @@ static TUI_TERMINAL_LOCK: Mutex<()> = Mutex::new(());
 use crate::{
     font_settings::FontSettings,
     tui_enums::{CursorMode, CursorNav, TuiMode},
-    tui_errors::CursorPositionError,
+    tui_errors::{IOError, OverflowError, TuiUnexpectedInputError},
     tui_events::TuiEvents,
     tui_io::{
         input_interface::InputInterfaceT,
@@ -197,54 +198,65 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn get_cursor_position(&mut self) -> Result<(u16, u16), CursorPositionError> {
-        use CursorPositionError::{IOError, OverflowError, TuiUnexpectedInputError};
+    pub fn get_cursor_position(&mut self) -> Result<(u16, u16), Box<dyn Error>> {
         _ = self.output_interface.write(b"\x1b[6n");
         _ = self.output_interface.flush();
-        let mut input = self.input_interface.read_raw().ok_or(IOError)?;
+        let mut input = self.input_interface.read_raw().ok_or(IOError {})?;
         if input != '\x1b' {
-            return Err(TuiUnexpectedInputError('\x1b', input));
+            Err(TuiUnexpectedInputError {
+                expected: '\x1b',
+                recieved: input,
+            })?;
         }
-        input = self.input_interface.read_raw().ok_or(IOError)?;
+        input = self.input_interface.read_raw().ok_or(IOError {})?;
         if input != '[' {
-            return Err(TuiUnexpectedInputError('\x1b', input));
+            Err(TuiUnexpectedInputError {
+                expected: '\x1b',
+                recieved: input,
+            })?;
         }
         let mut y: u16 = 0;
         let mut x: u16 = 0;
         loop {
-            input = self.input_interface.read_raw().ok_or(IOError)?;
+            input = self.input_interface.read_raw().ok_or(IOError {})?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < y {
-                        return Err(OverflowError);
+                        Err(OverflowError {})?;
                     }
                     y *= 10;
                     if u16::MAX - y < digit {
-                        return Err(OverflowError);
+                        Err(OverflowError {})?;
                     }
                     y += digit;
                 }
                 0x3B => break,
-                _ => return Err(TuiUnexpectedInputError(';', input)),
+                _ => Err(TuiUnexpectedInputError {
+                    expected: ';',
+                    recieved: input,
+                })?,
             }
         }
         loop {
-            input = self.input_interface.read_raw().ok_or(IOError)?;
+            input = self.input_interface.read_raw().ok_or(IOError {})?;
             match input as u8 {
                 0x30..=0x39 => {
                     let digit = (input as u16) - 0x30;
                     if u16::MAX / 10 < x {
-                        return Err(OverflowError);
+                        Err(OverflowError {})?;
                     }
                     x *= 10;
                     if u16::MAX - x < digit {
-                        return Err(OverflowError);
+                        Err(OverflowError {})?;
                     }
                     x += digit;
                 }
                 0x52 => break,
-                _ => return Err(TuiUnexpectedInputError('R', input)),
+                _ => Err(TuiUnexpectedInputError {
+                    expected: 'R',
+                    recieved: input,
+                })?,
             }
         }
         return Ok((x, y));

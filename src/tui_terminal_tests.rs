@@ -17,11 +17,11 @@ fn test_set_cursor_position() -> Result<(), String> {
     tui_terminal.set_cursor_position(x, y);
     let position = tui_terminal.get_cursor_position();
     tui_terminal.restore_cursor_position();
-
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -30,18 +30,21 @@ fn test_restore_cursor_position() -> Result<(), String> {
     let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
         .ok_or("Unable To Create TuiTerminal")?;
     let (x, y) = get_center(&mut tui_terminal)?;
-    let position1 = tui_terminal.get_cursor_position();
+    let position1 = tui_terminal
+        .get_cursor_position()
+        .map_err(|error| error.to_string())?;
+
     tui_terminal.save_cursor_position();
     tui_terminal.set_cursor_position(x, y);
     tui_terminal.restore_cursor_position();
-    let position2 = tui_terminal.get_cursor_position();
-
-    if position1 != position2 {
-        return Err(format!("{:?} != {:?}", position1, position2));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    let position2 = tui_terminal
+        .get_cursor_position()
+        .map_err(|error| error.to_string())?;
+    return if position1 == position2 {
+        Ok(())
+    } else {
+        Err(format!("{:?} != {:?}", position1, position2))?
+    };
 }
 
 #[allow(unused)]
@@ -57,12 +60,12 @@ fn test_shift_cursor_next() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     x = 1;
     y += 1;
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
 
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -79,12 +82,11 @@ fn test_shift_cursor_previous() -> Result<(), String> {
     x = 1;
     y -= 1;
 
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -100,12 +102,11 @@ fn test_shift_cursor_forwards() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     x += 1;
 
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -121,12 +122,11 @@ fn test_shift_cursor_backwards() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     x -= 1;
 
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -142,12 +142,11 @@ fn test_shift_cursor_up() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     y -= 1;
 
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
 
 #[allow(unused)]
@@ -163,10 +162,9 @@ fn test_shift_cursor_down() -> Result<(), String> {
     tui_terminal.restore_cursor_position();
     y += 1;
 
-    if position != Ok((x, y)) {
-        return Err(format!("{:?} != Ok({:?})", position, (x, y)));
-    }
-
-    drop(tui_terminal);
-    return Ok(());
+    return match position {
+        Ok(coordinates) if coordinates == (x, y) => Ok(()),
+        Ok(coordinates) => Err(format!("{:?} != Ok({:?})", position, (x, y))),
+        Err(error) => Err(error.to_string()),
+    };
 }
