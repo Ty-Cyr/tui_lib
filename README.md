@@ -11,17 +11,34 @@ This project, sets up an interface to interact with the terminal. It is supposed
 
 ```rust
     // Create a tui_terminal while remaining in main buffer.
-    let mut tui_terminal = TuiTerminal(TuiMode::Standard);
+    let mut tui_terminal = TuiTerminal::new(TuiMode::Standard);
 
     // Create a tui_terminal while switching to alternate buffer.
-    let mut tui_terminal = TuiTerminal(TuiMode::FullScreen);
+    let mut tui_terminal = TuiTerminal::new(TuiMode::FullScreen);
 
     // Output Line To Console
     tui_terminal.println("Hello World!");
 
-
     // Output Text To Console
     tui_terminal.print("Hello World!");
+    tui_terminal.print("\n");
+
+    // Change Font Settings
+    tui_terminal.set_font_color(Color::White);
+    tui_terminal.set_background_color(Color::RGB(255, 255, 255));
+    tui_terminal.set_bold(ThreeBool::True);
+    tui_terminal.set_underlined(ThreeBool::True);
+    tui_terminal.set_italics(ThreeBool::True);
+    tui_terminal.set_inverted(ThreeBool::True);
+    tui_terminal.set_blinking(ThreeBool::True);
+    tui_terminal.set_cursor(CursorMode::BlinkingBlock);
+
+    // Output Text with formating
+    tui_terminal.println("Hello World!".set_font_color(Color::CC256(255)));
+    tui_terminal.println("Hello World!".set_background_color(Color::BrightWhite));
+    tui_terminal.println("Hello World!".set_underlined(ThreeBool::True));
+    tui_terminal.println("Hello World!".set_italics(Three::True));
+    tui_terminal.println("Hello World!".set_blinking(Three::True));
 ```
 
 ## Testing
