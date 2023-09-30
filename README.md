@@ -4,7 +4,7 @@
 
 This project, sets up an interface to interact with the terminal. It is supposed to work on Windows, Linux, and Macos.
 
-### This Project Is Still in Early Development
+### This Project Is Still in Early Development. Breaking changes may still occur.
 
 ## Usage
 
