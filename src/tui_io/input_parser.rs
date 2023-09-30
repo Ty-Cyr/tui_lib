@@ -2,7 +2,66 @@ use crate::tui_events::TuiEvents;
 
 use super::input_interface::InputInterfaceT;
 
-pub trait MouseInput: InputInterfaceT {
+pub trait ParseInput: InputInterfaceT {
+    fn parse_input(&self, input_char: char) -> TuiEvents {
+        match input_char {
+            '\x1b' => {
+                return self.handle_escape_input_s1();
+            }
+            '\x7F' => {
+                return TuiEvents::Backspace;
+            }
+            '\n' | '\r' => {
+                return TuiEvents::Enter;
+            }
+            ' ' => {
+                return TuiEvents::Space;
+            }
+            '\t' => {
+                return TuiEvents::Tab;
+            }
+            _ => match input_char as u32 {
+                0x20..=0x7D => return TuiEvents::AsciiReadable(input_char),
+                0 => TuiEvents::Ignore,
+                1..=26 => return TuiEvents::Control((input_char as u8 + 0x40) as char),
+                _ => return TuiEvents::Other(input_char),
+            },
+        }
+    }
+    fn handle_escape_input_s1(&self) -> TuiEvents {
+        let input_char_option: Option<char> = self.read_raw_immediate();
+        let result = match input_char_option {
+            None => TuiEvents::Escape,
+            Some('[') => self.handle_escape_input_s2(),
+            Some(_) => TuiEvents::Error,
+        };
+        match result {
+            TuiEvents::Error | TuiEvents::Ignore => loop {
+                if let None = self.read_raw_immediate() {
+                    return result;
+                };
+            },
+            _ => return result,
+        }
+    }
+
+    fn handle_escape_input_s2(&self) -> TuiEvents {
+        let input_char = self.read_raw_immediate();
+        return match input_char {
+            Some('A') => TuiEvents::UpArrow,
+            Some('B') => TuiEvents::DownArrow,
+            Some('C') => TuiEvents::RightArrow,
+            Some('D') => TuiEvents::LeftArrow,
+            Some('3') => {
+                if let Some('~') = self.read_raw_immediate() {
+                    return TuiEvents::Delete;
+                }
+                TuiEvents::Error
+            }
+            Some('<') => self.handle_mouse_events(),
+            Some(_) | None => TuiEvents::Error,
+        };
+    }
     fn handle_mouse_events(&self) -> TuiEvents {
         return match self.read_raw_immediate() {
             Some('0') => match self.get_coordinates() {

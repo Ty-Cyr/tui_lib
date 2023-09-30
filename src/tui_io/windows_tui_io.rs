@@ -9,15 +9,12 @@ use crate::{
     tui_errors::CError,
     tui_events::TuiEvents,
     tui_io::{
-        input_interface::InputInterfaceT, mouse_input::MouseInput,
+        input_interface::InputInterfaceT, input_parser::ParseInput,
         output_interface::OutputInterfaceT,
     },
 };
 
-use windows::constants::{
-    virtual_keys, ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, KEY_EVENT, STD_INPUT_HANDLE,
-    STD_OUTPUT_HANDLE,
-};
+use windows::constants::{KEY_EVENT, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
 
 use windows::{
     constants::{ENABLE_EXTENDED_FLAGS, ENABLE_VIRTUAL_TERMINAL_INPUT},
@@ -80,94 +77,9 @@ impl InputInterface {
         }
         return Ok(*event);
     }
-
-    fn handle_escape_sequence(&self) -> TuiEvents {
-        match self.read_raw_immediate() {
-            Some('[') => {}
-            Some(_) => loop {
-                if let None = self.read_raw_immediate() {
-                    return TuiEvents::Error;
-                };
-            },
-            None => return TuiEvents::Escape,
-        }
-
-        let Some('<') = self.read_raw_immediate() else {
-            loop {
-                if let None = self.read_raw_immediate() {
-                    return TuiEvents::Error;
-                };
-            }
-        };
-
-        let result = self.handle_mouse_events();
-        match result {
-            TuiEvents::Error | TuiEvents::Ignore => loop {
-                if let None = self.read_raw_immediate() {
-                    return result;
-                }
-            },
-            _ => return result,
-        }
-    }
-
-    fn parse_key_event_data(&self, data: KEY_EVENT_RECORD) -> TuiEvents {
-        loop {
-            match data.virtual_key_code {
-                virtual_keys::VK_RETURN => return TuiEvents::Enter,
-                virtual_keys::VK_LEFT => return TuiEvents::LeftArrow,
-
-                virtual_keys::VK_UP => return TuiEvents::UpArrow,
-
-                virtual_keys::VK_RIGHT => return TuiEvents::RightArrow,
-
-                virtual_keys::VK_DOWN => return TuiEvents::DownArrow,
-
-                virtual_keys::VK_BACK => {
-                    return TuiEvents::Backspace;
-                }
-
-                virtual_keys::VK_DELETE => {
-                    return TuiEvents::Delete;
-                }
-
-                virtual_keys::VK_SPACE => {
-                    return TuiEvents::Space;
-                }
-
-                virtual_keys::VK_TAB => {
-                    return TuiEvents::Tab;
-                }
-
-                virtual_keys::VK_ESCAPE => return self.handle_escape_sequence(),
-
-                virtual_keys::VK_SHIFT => {
-                    return TuiEvents::Ignore;
-                }
-
-                _ => {
-                    let char_option: Option<char>;
-                    unsafe {
-                        char_option = char::from_u32(data.u_char.unicode_char as u32);
-                    }
-                    if let Some(character) = char_option {
-                        match character as u32 {
-                            0x20..=0x7D => return TuiEvents::AsciiReadable(character),
-                            0 => return TuiEvents::Ignore,
-                            1..=26 => return TuiEvents::Control((character as u8 + 0x40) as char),
-                            0x1b => return self.handle_escape_sequence(),
-                            _ => return TuiEvents::Other(character),
-                        }
-                    } else {
-                        return TuiEvents::Error;
-                    }
-                }
-            }
-        }
-    }
 }
 
-impl MouseInput for InputInterface {}
+impl ParseInput for InputInterface {}
 
 impl InputInterfaceT for InputInterface {
     fn new() -> Result<InputInterface, Box<dyn Error>> {
@@ -189,7 +101,8 @@ impl InputInterfaceT for InputInterface {
                     let key_event_data: KEY_EVENT_RECORD;
                     unsafe { key_event_data = event.event.key_event }
                     if key_event_data.key_down.as_bool() {
-                        let event: TuiEvents = self.parse_key_event_data(key_event_data);
+                        let input_char = unsafe { key_event_data.u_char.ascii_char as char };
+                        let event: TuiEvents = self.parse_input(input_char);
                         match event {
                             TuiEvents::Ignore => continue,
                             _ => return event,
@@ -287,12 +200,8 @@ pub fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalStat
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
-    let new_mode: CONSOLE_MODE = CONSOLE_MODE(
-        ENABLE_EXTENDED_FLAGS
-            | ENABLE_MOUSE_INPUT
-            | ENABLE_WINDOW_INPUT
-            | ENABLE_VIRTUAL_TERMINAL_INPUT,
-    );
+    let new_mode: CONSOLE_MODE =
+        CONSOLE_MODE(ENABLE_EXTENDED_FLAGS | ENABLE_VIRTUAL_TERMINAL_INPUT);
     _ = input_interface.set_console_mode(new_mode)?;
     return Ok((
         input_interface,

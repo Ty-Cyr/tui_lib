@@ -5,4 +5,4 @@ pub mod output_interface;
 #[cfg_attr(unix, path = "unix_tui_io.rs")]
 pub mod tui_io;
 
-mod mouse_input;
+mod input_parser;
