@@ -15,7 +15,7 @@ use self::unix::functions::{fcntl, get_errno_error, ioctl, tcgetattr, tcsetattr}
 use self::unix::structs::{Termios, Winsize};
 
 use super::input_interface::InputInterfaceT;
-use super::mouse_input::MouseInput;
+use super::input_parser::ParseInput;
 use super::output_interface::OutputInterfaceT;
 
 #[derive(Clone, Copy)]
@@ -94,7 +94,7 @@ impl InputInterfaceT for InputInterface {
     }
 }
 
-impl MouseInput for InputInterface {}
+impl ParseInput for InputInterface {}
 
 struct NonBlockInputInterface {
     input_fd: i32,
