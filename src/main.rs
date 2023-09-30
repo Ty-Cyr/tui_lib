@@ -8,8 +8,8 @@ use tui_lib::{
 };
 
 fn feature_sample() -> Result<(), String> {
-    let mut tui_terminal: TuiTerminal =
-        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Setup Terminal".to_string())?;
+    let mut tui_terminal: TuiTerminal = TuiTerminal::new(TuiMode::FullScreen)
+        .map_err(|_| "Failed To Setup Terminal".to_string())?;
     tui_terminal.set_background_color(Color::Black);
     tui_terminal.clear_screen();
     tui_terminal.set_cursor(CursorMode::Hidden);
@@ -249,7 +249,7 @@ fn feature_sample() -> Result<(), String> {
 
 fn draw_test() -> Result<(), String> {
     let mut tui_terminal =
-        TuiTerminal::new(TuiMode::FullScreen).ok_or("Failed To Get Tui Terminal")?;
+        TuiTerminal::new(TuiMode::FullScreen).map_err(|_| "Failed To Get Tui Terminal")?;
     tui_terminal.set_cursor_position(1, 1);
     let (width, height) = tui_terminal
         .get_teminal_size()

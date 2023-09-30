@@ -1,5 +1,6 @@
 use crate::tui_errors::CError;
 use crate::tui_events::TuiEvents;
+use std::error::Error;
 use std::ffi::{c_char, c_void};
 
 mod unix;
@@ -101,9 +102,9 @@ impl InputInterface {
 }
 
 impl InputInterfaceT for InputInterface {
-    fn new() -> Option<InputInterface> {
+    fn new() -> Result<InputInterface, Box<(dyn Error)>> {
         let input_fd: i32 = stdin().as_raw_fd();
-        return Some(InputInterface { input_fd: input_fd });
+        return Ok(InputInterface { input_fd: input_fd });
     }
 
     fn read_parsed(&self) -> TuiEvents {
@@ -206,19 +207,18 @@ impl Write for OutputInterface {
     }
 }
 
-pub fn setup_terminal() -> Option<(InputInterface, OutputInterface, TerminalState)> {
+pub fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
+{
     let input_interface: InputInterface = InputInterface::new()?;
     let output_interface: OutputInterface = OutputInterface {
         output_handle: stdout(),
     };
     let terminal_state: TerminalState = TerminalState {
-        termios_struct: input_interface.get_input_mode().ok()?,
+        termios_struct: input_interface.get_input_mode()?,
     };
-    input_interface
-        .set_input_mode(input_interface.get_raw_termios_struct())
-        .ok()?;
+    input_interface.set_input_mode(input_interface.get_raw_termios_struct())?;
 
-    return Some((input_interface, output_interface, terminal_state));
+    return Ok((input_interface, output_interface, terminal_state));
 }
 
 pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {

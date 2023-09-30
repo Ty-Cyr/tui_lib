@@ -31,8 +31,8 @@ pub struct TuiTerminal {
 }
 
 impl TuiTerminal {
-    pub fn new(tui_mode: TuiMode) -> Option<TuiTerminal> {
-        let lock: MutexGuard<'static, ()> = TUI_TERMINAL_LOCK.lock().ok()?;
+    pub fn new(tui_mode: TuiMode) -> Result<TuiTerminal, Box<dyn Error>> {
+        let lock: MutexGuard<'static, ()> = TUI_TERMINAL_LOCK.lock()?;
         let (input_interface, output_interface, terminal_state): (
             InputInterface,
             OutputInterface,
@@ -51,7 +51,7 @@ impl TuiTerminal {
             TuiMode::FullScreen => tui_terminal.alt_buffer(),
             _ => {}
         }
-        return Some(tui_terminal);
+        return Ok(tui_terminal);
     }
 
     fn get_font_color_code(&mut self, mut color: Color) -> String {
