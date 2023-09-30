@@ -36,13 +36,12 @@ mod inner_ffi {
 }
 
 pub unsafe fn get_c_error() -> CError {
-    const FORMAT_MESSAGE_ALLOCATE_BUFFER: u32 = 0;
     const FORMAT_MESSAGE_FROM_SYSTEM: u32 = 0x00001000;
     const FORMAT_MESSAGE_MAX_WIDTH_MASK: u32 = 0x000000FF;
     let error_code = GetLastError();
     let mut buffer = [0; 512];
     let format_result = FormatMessageA(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
         null(),
         error_code,
         0,
