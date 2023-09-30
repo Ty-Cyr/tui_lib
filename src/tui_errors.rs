@@ -2,7 +2,15 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Clone, Debug)]
 pub struct CError {
-    error_string: String,
+    pub error_string: String,
+}
+
+impl From<&str> for CError {
+    fn from(value: &str) -> CError {
+        return CError {
+            error_string: value.into(),
+        };
+    }
 }
 
 impl Display for CError {

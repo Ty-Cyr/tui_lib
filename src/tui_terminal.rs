@@ -9,7 +9,7 @@ static TUI_TERMINAL_LOCK: Mutex<()> = Mutex::new(());
 use crate::{
     font_settings::FontSettings,
     tui_enums::{CursorMode, CursorNav, TuiMode},
-    tui_errors::{IOError, OverflowError, TuiUnexpectedInputError},
+    tui_errors::{CError, IOError, OverflowError, TuiUnexpectedInputError},
     tui_events::TuiEvents,
     tui_io::{
         input_interface::InputInterfaceT,
@@ -400,7 +400,7 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
-    pub fn get_teminal_size(&self) -> Result<(u16, u16), String> {
+    pub fn get_teminal_size(&self) -> Result<(u16, u16), CError> {
         return self.output_interface.get_size();
     }
 

@@ -3,6 +3,7 @@ use std::io::{stdout, Stdout, Write};
 mod windows;
 
 use crate::{
+    tui_errors::CError,
     tui_events::TuiEvents,
     tui_io::{
         input_interface::InputInterfaceT, mouse_input::MouseInput,
@@ -251,7 +252,7 @@ pub struct OutputInterface {
 }
 
 impl OutputInterfaceT for OutputInterface {
-    fn get_size(&self) -> Result<(u16, u16), String> {
+    fn get_size(&self) -> Result<(u16, u16), CError> {
         let mut screen_info_struct: CONSOLE_SCREEN_BUFFER_INFO = Default::default();
         unsafe {
             let handle: HANDLE = get_std_handle(STD_OUTPUT_HANDLE)
