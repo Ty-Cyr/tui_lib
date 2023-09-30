@@ -4,6 +4,8 @@
 
 This project, sets up an interface to interact with the terminal. It is supposed to work on Windows, Linux, and Macos.
 
+### This Project Is Still in Early Development
+
 ## Usage
 
 - Never Create two simeltaneous copies of a TuiTerminal. The program will block on the creation of the second due to a mutex.
