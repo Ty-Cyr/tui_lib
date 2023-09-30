@@ -10,7 +10,7 @@ use crate::{
     tui_events::TuiEvents,
     tui_io::{
         input_interface::InputInterfaceT, input_parser::ParseInput,
-        output_interface::OutputInterfaceT,
+        output_interface::OutputInterfaceT, terminal_interface::TerminalTrait,
     },
 };
 
@@ -28,13 +28,17 @@ use windows::{
 use self::windows::{functions::get_c_error, structs::INPUT_RECORD};
 
 #[derive(Clone, Copy)]
-pub struct TerminalState {
-    console_mode: CONSOLE_MODE,
-}
-
-#[derive(Clone, Copy)]
 pub struct InputInterface {
     input_handle: HANDLE,
+}
+
+pub struct OutputInterface {
+    output_handle: Stdout,
+}
+pub struct TerminalManager {}
+#[derive(Clone, Copy)]
+pub struct TerminalState {
+    console_mode: CONSOLE_MODE,
 }
 
 impl InputInterface {
@@ -163,9 +167,6 @@ impl InputInterfaceT for InputInterface {
         }
     }
 }
-pub struct OutputInterface {
-    output_handle: Stdout,
-}
 
 impl OutputInterfaceT for OutputInterface {
     fn get_size(&self) -> Result<(u16, u16), CError> {
@@ -193,23 +194,25 @@ impl Write for OutputInterface {
     }
 }
 
-pub fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
-{
-    let input_interface: InputInterface = InputInterface::new()?;
-    let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
-    let output_interface: OutputInterface = OutputInterface {
-        output_handle: stdout(),
-    };
-    let new_mode: CONSOLE_MODE =
-        CONSOLE_MODE(ENABLE_EXTENDED_FLAGS | ENABLE_VIRTUAL_TERMINAL_INPUT);
-    _ = input_interface.set_console_mode(new_mode)?;
-    return Ok((
-        input_interface,
-        output_interface,
-        TerminalState { console_mode },
-    ));
-}
+impl TerminalTrait for TerminalManager {
+    fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
+    {
+        let input_interface: InputInterface = InputInterface::new()?;
+        let console_mode: CONSOLE_MODE = input_interface.get_console_mode()?;
+        let output_interface: OutputInterface = OutputInterface {
+            output_handle: stdout(),
+        };
+        let new_mode: CONSOLE_MODE =
+            CONSOLE_MODE(ENABLE_EXTENDED_FLAGS | ENABLE_VIRTUAL_TERMINAL_INPUT);
+        _ = input_interface.set_console_mode(new_mode)?;
+        return Ok((
+            input_interface,
+            output_interface,
+            TerminalState { console_mode },
+        ));
+    }
 
-pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
-    _ = input_interface.set_console_mode(terminal_state.console_mode);
+    fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
+        _ = input_interface.set_console_mode(terminal_state.console_mode);
+    }
 }
