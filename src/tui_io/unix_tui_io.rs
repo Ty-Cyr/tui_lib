@@ -17,15 +17,20 @@ use self::unix::structs::{Termios, Winsize};
 use super::input_interface::InputInterfaceT;
 use super::input_parser::ParseInput;
 use super::output_interface::OutputInterfaceT;
-
-#[derive(Clone, Copy)]
-pub struct TerminalState {
-    termios_struct: Termios,
-}
+use super::terminal_interface::TerminalTrait;
 
 #[derive(Clone, Copy)]
 pub struct InputInterface {
     input_fd: i32,
+}
+pub struct OutputInterface {
+    output_handle: Stdout,
+}
+pub struct TerminalManager {}
+
+#[derive(Clone, Copy)]
+pub struct TerminalState {
+    termios_struct: Termios,
 }
 
 impl InputInterface {
@@ -131,10 +136,6 @@ impl Drop for NonBlockInputInterface {
     }
 }
 
-pub struct OutputInterface {
-    output_handle: Stdout,
-}
-
 impl OutputInterfaceT for OutputInterface {
     fn get_size(&self) -> Result<(u16, u16), CError> {
         let mut window_size: Winsize = Winsize::default();
@@ -157,20 +158,22 @@ impl Write for OutputInterface {
     }
 }
 
-pub fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
-{
-    let input_interface: InputInterface = InputInterface::new()?;
-    let output_interface: OutputInterface = OutputInterface {
-        output_handle: stdout(),
-    };
-    let terminal_state: TerminalState = TerminalState {
-        termios_struct: input_interface.get_input_mode()?,
-    };
-    input_interface.set_input_mode(input_interface.get_raw_termios_struct())?;
+impl TerminalTrait for TerminalManager {
+    fn setup_terminal() -> Result<(InputInterface, OutputInterface, TerminalState), Box<dyn Error>>
+    {
+        let input_interface: InputInterface = InputInterface::new()?;
+        let output_interface: OutputInterface = OutputInterface {
+            output_handle: stdout(),
+        };
+        let terminal_state: TerminalState = TerminalState {
+            termios_struct: input_interface.get_input_mode()?,
+        };
+        input_interface.set_input_mode(input_interface.get_raw_termios_struct())?;
 
-    return Ok((input_interface, output_interface, terminal_state));
-}
+        return Ok((input_interface, output_interface, terminal_state));
+    }
 
-pub fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
-    _ = input_interface.set_input_mode(terminal_state.termios_struct);
+    fn reset_terminal_settings(input_interface: &InputInterface, terminal_state: &TerminalState) {
+        _ = input_interface.set_input_mode(terminal_state.termios_struct);
+    }
 }

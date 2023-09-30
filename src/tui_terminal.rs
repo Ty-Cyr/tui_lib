@@ -14,9 +14,8 @@ use crate::{
     tui_io::{
         input_interface::InputInterfaceT,
         output_interface::OutputInterfaceT,
-        tui_io::{
-            reset_terminal_settings, setup_terminal, InputInterface, OutputInterface, TerminalState,
-        },
+        terminal_interface::TerminalTrait,
+        tui_io::{InputInterface, OutputInterface, TerminalManager, TerminalState},
     },
     Color, StringPlus, ThreeBool,
 };
@@ -37,7 +36,7 @@ impl TuiTerminal {
             InputInterface,
             OutputInterface,
             TerminalState,
-        ) = setup_terminal()?;
+        ) = TerminalManager::setup_terminal()?;
         let mut tui_terminal = TuiTerminal {
             font_settings: FontSettings::default(),
             cursor_mode: CursorMode::Default,
@@ -445,7 +444,7 @@ impl Drop for TuiTerminal {
         self.send_font_settings(&FontSettings::default());
         self.main_buffer();
         self.disable_mouse_events();
-        reset_terminal_settings(&self.input_interface, &self.terminal_state);
+        TerminalManager::reset_terminal_settings(&self.input_interface, &self.terminal_state);
         _ = self.output_interface.flush();
         let _lock = &self.lock;
     }
