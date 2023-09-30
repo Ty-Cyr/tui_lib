@@ -1,3 +1,4 @@
+use crate::tui_errors::CError;
 use crate::tui_events::TuiEvents;
 use std::ffi::{c_char, c_void};
 
@@ -27,7 +28,7 @@ pub struct InputInterface {
 }
 
 impl InputInterface {
-    pub fn get_input_mode(&self) -> Result<Termios, String> {
+    pub fn get_input_mode(&self) -> Result<Termios, CError> {
         let mut termios_struct: Termios = Termios::default();
         unsafe {
             if tcgetattr(self.input_fd.clone(), &mut termios_struct) == -1 {
@@ -36,7 +37,7 @@ impl InputInterface {
         }
         return Ok(termios_struct);
     }
-    pub fn set_input_mode(&self, mut termios_struct: Termios) -> Result<(), String> {
+    pub fn set_input_mode(&self, mut termios_struct: Termios) -> Result<(), CError> {
         unsafe {
             if -1 == tcsetattr(self.input_fd, TCSADRAIN, &mut termios_struct) {
                 return Err(get_errno_error());
@@ -184,7 +185,7 @@ pub struct OutputInterface {
 }
 
 impl OutputInterfaceT for OutputInterface {
-    fn get_size(&self) -> Result<(u16, u16), String> {
+    fn get_size(&self) -> Result<(u16, u16), CError> {
         let mut window_size: Winsize = Winsize::default();
         unsafe {
             if 0 != ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window_size) {

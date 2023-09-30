@@ -1,5 +1,7 @@
 use std::ffi::{c_void, CStr};
 
+use crate::tui_errors::CError;
+
 use super::structs::Termios;
 extern "C" {
     pub fn cfmakeraw(termios: *mut Termios);
@@ -27,9 +29,9 @@ fn errno() -> u32 {
     }
 }
 
-pub fn get_errno_error() -> String {
+pub fn get_errno_error() -> CError {
     let string_pointer: *const i8;
-    let result: String;
+    let result: CError;
     unsafe {
         string_pointer = strerror(errno());
         result = CStr::from_ptr(string_pointer)
