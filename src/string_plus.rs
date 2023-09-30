@@ -1,5 +1,6 @@
 use crate::{font_settings::FontSettings, Color, ThreeBool};
 
+#[derive(Clone, Copy, Debug)]
 pub enum DecCharSet {
     TopLeft,
     HorizontalBar,
@@ -43,7 +44,7 @@ impl DecCharSet {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StringPlus {
     string: String,
     font_settings: FontSettings,

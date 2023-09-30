@@ -1,6 +1,6 @@
 use crate::tui_enums::{Color, ThreeBool};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct FontSettings {
     pub font_color: Color,
     pub background_color: Color,
