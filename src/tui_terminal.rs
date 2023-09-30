@@ -20,6 +20,7 @@ use crate::{
     Color, StringPlus, ThreeBool,
 };
 
+#[derive(Debug)]
 pub struct TuiTerminal {
     font_settings: FontSettings,
     cursor_mode: CursorMode,

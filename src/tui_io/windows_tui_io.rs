@@ -27,16 +27,17 @@ use windows::{
 
 use self::windows::{functions::get_c_error, structs::INPUT_RECORD};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct InputInterface {
     input_handle: HANDLE,
 }
 
+#[derive(Debug)]
 pub struct OutputInterface {
     output_handle: Stdout,
 }
 pub struct TerminalManager {}
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TerminalState {
     console_mode: CONSOLE_MODE,
 }
