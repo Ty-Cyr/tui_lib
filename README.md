@@ -39,8 +39,8 @@ This project, sets up an interface to interact with the terminal. It is supposed
     tui_terminal.println("Hello World!".set_font_color(Color::CC256(255)));
     tui_terminal.println("Hello World!".set_background_color(Color::BrightWhite));
     tui_terminal.println("Hello World!".set_underlined(ThreeBool::True));
-    tui_terminal.println("Hello World!".set_italics(Three::True));
-    tui_terminal.println("Hello World!".set_blinking(Three::True));
+    tui_terminal.println("Hello World!".set_italics(ThreeBool::True));
+    tui_terminal.println("Hello World!".set_blinking(ThreeBool::True));
 ```
 
 ## Testing
