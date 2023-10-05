@@ -3,7 +3,7 @@ pub enum TuiMode {
     FullScreen,
     Standard,
 }
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Color {
     White,
     BrightWhite,
@@ -26,7 +26,7 @@ pub enum Color {
     Default,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ThreeBool {
     True,
     False,

@@ -352,6 +352,15 @@ impl TuiTerminal {
         _ = self.output_interface.flush();
     }
 
+    pub fn get_font_settings(&self) -> FontSettings {
+        return self.font_settings.clone();
+    }
+
+    pub fn set_font_settings(&mut self, font_settings: FontSettings) {
+        self.font_settings = font_settings;
+        self.send_font_settings(&self.font_settings.clone());
+    }
+
     pub fn println<T: Into<StringPlus>>(&mut self, string_plus: T) {
         let string_plus: StringPlus = string_plus.into();
         let string: String = (&string_plus).into();

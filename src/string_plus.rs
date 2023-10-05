@@ -87,6 +87,10 @@ impl StringPlus {
     pub fn get_dec_line(&self) -> bool {
         return self.font_settings.is_dec_line;
     }
+
+    pub fn len(&self) -> usize {
+        return self.string.len();
+    }
 }
 
 pub trait StringPlusTrait {

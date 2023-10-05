@@ -4,7 +4,7 @@ use string_plus::StringPlus;
 pub mod tui_enums;
 use tui_enums::{Color, ThreeBool};
 
-mod font_settings;
+pub mod font_settings;
 
 pub mod tui_events;
 

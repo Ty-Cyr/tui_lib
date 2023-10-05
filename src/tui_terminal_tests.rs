@@ -1,4 +1,7 @@
-use crate::tui_terminal::TuiTerminal;
+use crate::{
+    tui_enums::{Color, ThreeBool},
+    tui_terminal::TuiTerminal,
+};
 
 fn get_center(tui_terminal: &mut TuiTerminal) -> Result<(u16, u16), String> {
     let (x, y) = tui_terminal
@@ -159,4 +162,20 @@ fn test_shift_cursor_down() -> Result<(), String> {
         Ok(coordinates) => Err(format!("{:?} != Ok({:?})", coordinates, position)),
         Err(error) => Err(error.to_string()),
     };
+}
+
+#[test]
+fn test_font_settings_restore() -> Result<(), String> {
+    let mut tui_terminal = TuiTerminal::new(crate::tui_enums::TuiMode::FullScreen)
+        .map_err(|_| "Unable to Create Tui Terminal")?;
+    let font_settings1 = tui_terminal.get_font_settings();
+    tui_terminal.set_font_color(Color::RGB(255, 41, 144));
+    tui_terminal.set_background_color(Color::BrightMagenta);
+    tui_terminal.set_inverted(ThreeBool::True);
+    tui_terminal.set_font_settings(font_settings1.clone());
+    let font_settings2 = tui_terminal.get_font_settings();
+    if font_settings2 != tui_terminal.get_font_settings() {
+        Err(format!("{:?} != {:?}", font_settings1, font_settings2))?;
+    }
+    Ok(())
 }
