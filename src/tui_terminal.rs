@@ -342,6 +342,10 @@ impl TuiTerminal {
         self.send_cursor_code();
     }
 
+    pub fn get_cursor(&self) -> CursorMode {
+        return self.cursor_mode.clone();
+    }
+
     pub fn save_cursor_position(&mut self) {
         _ = self.output_interface.write(b"\x1b7");
         _ = self.output_interface.flush();
@@ -432,14 +436,14 @@ impl TuiTerminal {
         self.send_font_settings(&FontSettings::default());
     }
 
-    fn enable_mouse_events(&mut self) {
+    pub fn enable_mouse_events(&mut self) {
         _ = self.output_interface.write("\x1b[?1003h".as_bytes());
         _ = self.output_interface.write("\x1b[?1006h".as_bytes());
         _ = self.output_interface.write("\x1b[?1015h".as_bytes());
         _ = self.output_interface.flush();
     }
 
-    fn disable_mouse_events(&mut self) {
+    pub fn disable_mouse_events(&mut self) {
         _ = self.output_interface.write("\x1b[?1003l".as_bytes());
         _ = self.output_interface.write("\x1b[?1006l".as_bytes());
         _ = self.output_interface.write("\x1b[?1015l".as_bytes());
