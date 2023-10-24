@@ -54,7 +54,7 @@ impl TuiTerminal {
         return Ok(tui_terminal);
     }
 
-    fn get_font_color_code(&mut self, mut color: Color) -> String {
+    fn get_font_color_code(&self, mut color: Color) -> String {
         if let Color::Default = color {
             color = self.font_settings.font_color;
         }
@@ -94,7 +94,7 @@ impl TuiTerminal {
         .into();
     }
 
-    fn get_background_color_code(&mut self, mut color: Color) -> String {
+    fn get_background_color_code(&self, mut color: Color) -> String {
         if let Color::Default = color {
             color = self.font_settings.background_color;
         }
@@ -134,7 +134,7 @@ impl TuiTerminal {
         .into();
     }
 
-    fn get_bold_code(&mut self, mut is_bold: ThreeBool) -> &str {
+    fn get_bold_code(&self, mut is_bold: ThreeBool) -> &str {
         if let ThreeBool::Default = is_bold {
             is_bold = self.font_settings.is_bold;
         }
@@ -144,7 +144,7 @@ impl TuiTerminal {
         };
     }
 
-    fn get_underlined_code(&mut self, mut is_underlined: ThreeBool) -> &str {
+    fn get_underlined_code(&self, mut is_underlined: ThreeBool) -> &str {
         if let ThreeBool::Default = is_underlined {
             is_underlined = self.font_settings.is_underlined;
         }
@@ -154,7 +154,7 @@ impl TuiTerminal {
         };
     }
 
-    fn get_italics_code(&mut self, mut is_italics: ThreeBool) -> &str {
+    fn get_italics_code(&self, mut is_italics: ThreeBool) -> &str {
         if let ThreeBool::Default = is_italics {
             is_italics = self.font_settings.is_underlined;
         }
@@ -164,7 +164,7 @@ impl TuiTerminal {
         };
     }
 
-    fn get_inverted_code(&mut self, mut is_inverted: ThreeBool) -> &str {
+    fn get_inverted_code(&self, mut is_inverted: ThreeBool) -> &str {
         if let ThreeBool::Default = is_inverted {
             is_inverted = self.font_settings.is_inverted;
         }
@@ -174,7 +174,7 @@ impl TuiTerminal {
         };
     }
 
-    fn get_blinking_code(&mut self, mut is_blinking: ThreeBool) -> &str {
+    fn get_blinking_code(&self, mut is_blinking: ThreeBool) -> &str {
         if let ThreeBool::Default = is_blinking {
             is_blinking = self.font_settings.is_blinking;
         }
@@ -284,7 +284,7 @@ impl TuiTerminal {
         }
     }
 
-    fn send_font_settings(&mut self, font_settings: &FontSettings) {
+    fn calc_font_settings_code(&self, font_settings: &FontSettings) -> String {
         let mut code: String = String::from("\x1b[");
         code += self.get_font_color_code(font_settings.font_color).as_str();
         code += ";";
@@ -302,10 +302,22 @@ impl TuiTerminal {
         code += ";";
         code += self.get_blinking_code(font_settings.is_blinking);
         code += "m";
+        return code;
+    }
+
+    fn send_font_settings(&mut self, font_settings: &FontSettings) {
+        let code = self.calc_font_settings_code(font_settings);
         _ = self.output_interface.write(code.as_bytes());
         self.send_dec_line_code(font_settings.is_dec_line);
         _ = self.output_interface.flush();
         self.clear_end_line();
+    }
+
+    fn send_font_settings_passive(&mut self, font_settings: &FontSettings) {
+        let code = self.calc_font_settings_code(font_settings);
+        _ = self.output_interface.write(code.as_bytes());
+        self.send_dec_line_code(font_settings.is_dec_line);
+        _ = self.output_interface.flush();
     }
 
     pub fn set_font_color(&mut self, color: Color) {
@@ -363,6 +375,27 @@ impl TuiTerminal {
     pub fn set_font_settings(&mut self, font_settings: FontSettings) {
         self.font_settings = font_settings;
         self.send_font_settings(&self.font_settings.clone());
+    }
+
+    pub fn set_font_settings_passive(&mut self, font_settings: FontSettings) {
+        self.font_settings = font_settings;
+        self.send_font_settings_passive(&self.font_settings.clone());
+    }
+
+    pub fn write<T: Into<StringPlus>>(&mut self, string_plus: T) {
+        let string_plus: StringPlus = string_plus.into();
+        let string: String = (&string_plus).into();
+        let mut line_number: usize = 0;
+        for line in string.split("\n") {
+            self.send_font_settings_passive(string_plus.get_font_settings());
+            if line_number != 0 {
+                _ = self.output_interface.write(b"\n");
+            }
+            _ = self.output_interface.write(line.as_bytes());
+            self.send_font_settings_passive(&self.font_settings.clone());
+            line_number += 1;
+        }
+        _ = self.output_interface.flush();
     }
 
     pub fn println<T: Into<StringPlus>>(&mut self, string_plus: T) {
