@@ -1,8 +1,8 @@
-use std::error::Error;
+use std::{error::Error, fmt::Debug};
 
 use crate::tui_events::TuiEvents;
 
-pub trait InputInterfaceT {
+pub trait InputInterfaceT: Debug {
     fn new() -> Result<Self, Box<dyn Error>>
     where
         Self: Sized;

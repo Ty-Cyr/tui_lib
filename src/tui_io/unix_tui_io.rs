@@ -19,16 +19,18 @@ use super::input_parser::ParseInput;
 use super::output_interface::OutputInterfaceT;
 use super::terminal_interface::TerminalTrait;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct InputInterface {
     input_fd: i32,
 }
+
+#[derive(Debug)]
 pub struct OutputInterface {
     output_handle: Stdout,
 }
 pub struct TerminalManager {}
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TerminalState {
     termios_struct: Termios,
 }
