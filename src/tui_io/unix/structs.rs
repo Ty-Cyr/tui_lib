@@ -1,6 +1,6 @@
 #[cfg(not(target_os = "macos"))]
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Termios {
     pub c_iflag: u32,
     pub c_oflag: u32,

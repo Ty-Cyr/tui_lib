@@ -54,6 +54,10 @@ This project, sets up an interface to interact with the terminal. It is supposed
 
 - Added Debug Implementations to Structs
 
+### 0.1.6
+ 
+- Fixed Missing Debug Implentation in Linux
+
 ## Testing
 
 When writing tests for this library be sure to ensure the tests are running on a single thread. Some functions rely on coordinated input and output. Rust's parrellel tests can create race conditions that throw off the results.
