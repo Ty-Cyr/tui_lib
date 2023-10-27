@@ -55,8 +55,12 @@ This project, sets up an interface to interact with the terminal. It is supposed
 - Added Debug Implementations to Structs
 
 ### 0.1.6
- 
+
 - Fixed Missing Debug Implentation in Linux
+
+### 0.1.7
+
+- Added set_font_settings function to structs that implement into<StringPlus>
 
 ## Testing
 

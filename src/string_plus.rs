@@ -101,6 +101,7 @@ pub trait StringPlusTrait {
     fn set_italics(self, is_blinking: ThreeBool) -> StringPlus;
     fn set_inverted(self, is_inverted: ThreeBool) -> StringPlus;
     fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus;
+    fn set_font_settings(self, font_settings: FontSettings) -> StringPlus;
 }
 
 impl<T: Into<StringPlus>> StringPlusTrait for T {
@@ -142,6 +143,12 @@ impl<T: Into<StringPlus>> StringPlusTrait for T {
     fn set_blinking(self, is_blinking: ThreeBool) -> StringPlus {
         let mut string_plus: StringPlus = self.into();
         string_plus.font_settings.is_blinking = is_blinking;
+        return string_plus;
+    }
+
+    fn set_font_settings(self, font_settings: FontSettings) -> StringPlus {
+        let mut string_plus: StringPlus = self.into();
+        string_plus.font_settings = font_settings;
         return string_plus;
     }
 }
